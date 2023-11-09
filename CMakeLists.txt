@@ -9,4 +9,4 @@ add_subdirectory(src/)
 add_subdirectory(tests/)
 
 add_executable(${PROJECT_NAME} src/main.c)
-target_link_libraries(${PROJECT_NAME} PUBLIC library)
+target_link_libraries(${PROJECT_NAME} PUBLIC library curl)
