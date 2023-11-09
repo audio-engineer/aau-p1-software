@@ -12,7 +12,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-file(GLOB TEST_FILES *.cc *.h)
+file(GLOB TEST_FILES *.cc)
 add_executable(${PROJECT_NAME} ${TEST_FILES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC library GTest::gtest_main)
