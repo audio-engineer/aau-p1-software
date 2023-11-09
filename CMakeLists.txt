@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.25)
 project(aau_p1_software C)
 
-set(CMAKE_C_STANDARD 23)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-file(GLOB SRC_FILES src/*.c src/*.h)
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+add_subdirectory(src/)
+add_subdirectory(tests/)
+
+add_executable(${PROJECT_NAME} src/main.c)
+target_link_libraries(${PROJECT_NAME} PUBLIC library)
