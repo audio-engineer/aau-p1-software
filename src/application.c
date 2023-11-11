@@ -72,9 +72,12 @@ void Run() {
   }
 
   char endpoint[kBufferSize] = "";
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(endpoint, kRejseplanenApiBaseUrl, kBufferSize);
   strncat(endpoint, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
           kBufferSize);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
