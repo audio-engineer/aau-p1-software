@@ -72,8 +72,8 @@ void Run() {
   }
 
   char endpoint[kBufferSize] = "";
-  strlcat(endpoint, kRejseplanenApiBaseUrl, kBufferSize);
-  strlcat(endpoint, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
+  strncat(endpoint, kRejseplanenApiBaseUrl, kBufferSize);
+  strncat(endpoint, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
           kBufferSize);
 
   curl_easy_setopt(curl, CURLOPT_URL, endpoint);

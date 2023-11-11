@@ -19,7 +19,7 @@ pkg_search_module(OPENSSL REQUIRED openssl)
 
 if (OPENSSL_FOUND)
     include_directories(${OPENSSL_INCLUDE_DIRS})
-    message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+    message(STATUS "OpenSSL found. Using version ${OPENSSL_VERSION}")
 else ()
     if (UNIX AND NOT APPLE)
         message(STATUS "On Linux, but no OpenSSL found")
