@@ -54,8 +54,8 @@ void Run() {
   char *json_string = cJSON_Print(json_object);
 
   printf(
-      "### cURL test "
-      "##################################################################\n");
+      "### cJSON test "
+      "#################################################################\n");
   printf("%s\n", json_string);
   printf("\n");
 
@@ -79,8 +79,8 @@ void Run() {
   curl_easy_setopt(curl, CURLOPT_URL, endpoint);
 
   printf(
-      "### cJSON test "
-      "#################################################################\n");
+      "### cURL test "
+      "##################################################################\n");
   curl_easy_perform(curl);
   curl_easy_cleanup(curl);
 }
