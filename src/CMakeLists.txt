@@ -4,7 +4,9 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 include(FetchContent)
+find_package(PkgConfig REQUIRED)
 
+# Fetch cJSON and make it available
 FetchContent_Declare(
         cjson
         GIT_REPOSITORY https://github.com/DaveGamble/cJSON.git
@@ -12,6 +14,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cjson)
 
+# Check whether OpenSSL is installed on the system. It's a required dependency of cURL
+pkg_search_module(OPENSSL REQUIRED openssl)
+
+if (OPENSSL_FOUND)
+    include_directories(${OPENSSL_INCLUDE_DIRS})
+    message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+else ()
+    if (UNIX AND NOT APPLE)
+        message(STATUS "On Linux, but no OpenSSL found")
+    endif ()
+endif ()
+
+# Fetch cURL and make it available
 FetchContent_Declare(
         curl
         GIT_REPOSITORY https://github.com/curl/curl.git
