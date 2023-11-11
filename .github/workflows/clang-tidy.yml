@@ -8,6 +8,7 @@ jobs:
       - uses: ZedThree/clang-tidy-review@v0.14.0
         id: review
         with:
+          apt_packages: pkg-config
           config_file: '.clang-tidy'
           cmake_command: cmake . -D CMAKE_C_COMPILER=clang-16
       - if: steps.review.outputs.total_comments > 0
