@@ -34,11 +34,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(curl)
 
-file(GLOB LIBRARY_FILES application.h application.c calculations.h calculations.c string_builder.h string_builder.c)
+file(GLOB LIBRARY_FILES application.c calculations.c string_builder.c)
 add_library(${PROJECT_NAME} ${LIBRARY_FILES})
 
-include_directories(${cjson_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${cjson_SOURCE_DIR})
+
 target_link_libraries(${PROJECT_NAME} PUBLIC cjson libcurl)
-#[[TODO -Werror Disabled due to cJSON throwing errors on compilation. We need to disable errors for cJSON until we find
-a better solution.]]
+
+#[[TODO -Werror disabled due to cJSON throwing errors on compilation. We need to disable errors for cJSON until we find
+    a better solution.]]
 target_compile_options(cjson PRIVATE -Wno-error)
+
+target_compile_options(${PROJECT_NAME} PRIVATE -Werror -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
