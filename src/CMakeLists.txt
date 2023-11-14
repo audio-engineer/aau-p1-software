@@ -1,4 +1,4 @@
-project(library C)
+project(aau_p1_software_library C)
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)

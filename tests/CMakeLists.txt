@@ -17,7 +17,7 @@ enable_testing()
 file(GLOB TEST_FILES *.cc)
 add_executable(${PROJECT_NAME} ${TEST_FILES})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC library GTest::gtest_main)
+target_link_libraries(${PROJECT_NAME} PUBLIC aau_p1_software_library GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME})
