@@ -30,7 +30,7 @@ void Run() {
   /*
    * String builder test
    */
-  char *output_string = malloc(kBufferSize * sizeof(char));
+  char* output_string = malloc(kBufferSize * sizeof(char));
   BuildString(output_string, "The number is: ", kSecondNumber);
 
   printf(
@@ -46,12 +46,12 @@ void Run() {
    */
   const int kAge = 30;
 
-  cJSON *json_object = cJSON_CreateObject();
+  cJSON* json_object = cJSON_CreateObject();
   cJSON_AddStringToObject(json_object, "name", "John Doe");
   cJSON_AddNumberToObject(json_object, "age", kAge);
   cJSON_AddStringToObject(json_object, "email", "john.doe@example.com");
 
-  char *json_string = cJSON_Print(json_object);
+  char* json_string = cJSON_Print(json_object);
 
   printf(
       "### cJSON test "
@@ -65,7 +65,7 @@ void Run() {
   /*
    * cURL test
    */
-  CURL *curl = curl_easy_init();
+  CURL* curl = curl_easy_init();
 
   if (!curl) {
     return;
