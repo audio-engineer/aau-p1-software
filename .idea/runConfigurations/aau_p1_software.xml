@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="aau_p1_software" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="aau_p1_software" TARGET_NAME="aau_p1_software" CONFIG_NAME="Debug-System" RUN_TARGET_PROJECT_NAME="aau_p1_software" RUN_TARGET_NAME="aau_p1_software">
+  <configuration default="false" name="aau_p1_software" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="aau_p1_software" TARGET_NAME="aau_p1_software" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="aau_p1_software" RUN_TARGET_NAME="aau_p1_software">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>
