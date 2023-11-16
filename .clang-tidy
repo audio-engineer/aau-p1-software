@@ -11,3 +11,5 @@ performance-*,
 portability-*,
 readability-*'
 FormatStyle: file
+CheckOptions:
+  concurrency-mt-unsafe.FunctionSet: posix
