@@ -94,9 +94,9 @@ void Run() {
   char endpoint[kBufferSize] = "";
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  strncat(endpoint, kRejseplanenApiBaseUrl, 44);
+  strncat(endpoint, kRejseplanenApiBaseUrl, strlen(kRejseplanenApiBaseUrl));
   strncat(endpoint, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
-          55);
+          strlen("stopsNearby?coordX=55673059&coordY=12565557&format=json"));
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   Response response = {NULL, 0};
