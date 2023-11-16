@@ -3,12 +3,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <sys/_types/_size_t.h>
+#endif
 
 #include "cJSON.h"
 #include "calculations.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
 #include "string_builder.h"
+
+size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
+  size_t realsize = size * nmemb;
+
+  char* ptr = realloc(response->body, response->size + realsize + 1);
+
+  if (!ptr) {
+    exit(EXIT_FAILURE);
+  }
+
+  response->body = ptr;
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  memcpy(&(response->body[response->size]), data, realsize);
+  response->size += realsize;
+  response->body[response->size] = 0;
+
+  return realsize;
+}
 
 void Run() {
   /*
@@ -17,14 +38,14 @@ void Run() {
   const int kFirstNumber = 3;
   const int kSecondNumber = 5;
 
-  int added_numbers = AddNumbers(kFirstNumber, kSecondNumber);
+  const int kAddedNumbers = AddNumbers(kFirstNumber, kSecondNumber);
 
   printf(
       "### Print test "
       "#################################################################\n");
   printf("First number: %d\n", kFirstNumber);
   printf("Second number: %d\n", kSecondNumber);
-  printf("Added numbers: %d\n", added_numbers);
+  printf("Added numbers: %d\n", kAddedNumbers);
   printf("\n");
 
   /*
@@ -74,16 +95,48 @@ void Run() {
   char endpoint[kBufferSize] = "";
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  strncat(endpoint, kRejseplanenApiBaseUrl, kBufferSize);
+  strncat(endpoint, kRejseplanenApiBaseUrl, strlen(kRejseplanenApiBaseUrl));
   strncat(endpoint, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
-          kBufferSize);
+          strlen("stopsNearby?coordX=55673059&coordY=12565557&format=json"));
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
+  Response response = {NULL, 0};
+
   curl_easy_setopt(curl, CURLOPT_URL, endpoint);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SaveResponse);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+  curl_easy_perform(curl);
 
   printf(
       "### cURL test "
       "##################################################################\n");
-  curl_easy_perform(curl);
+
+  cJSON* body = cJSON_Parse(response.body);
+
+  const cJSON* location_list =
+      cJSON_GetObjectItemCaseSensitive(body, "LocationList");
+  const cJSON* stop_location =
+      cJSON_GetObjectItemCaseSensitive(location_list, "StopLocation");
+
+  const cJSON* location = NULL;
+
+  cJSON_ArrayForEach(location, stop_location) {
+    const cJSON* name = cJSON_GetObjectItemCaseSensitive(location, "name");
+    const cJSON* x_coordinate = cJSON_GetObjectItemCaseSensitive(location, "x");
+    const cJSON* y_coordinate = cJSON_GetObjectItemCaseSensitive(location, "y");
+    const cJSON* location_id = cJSON_GetObjectItemCaseSensitive(location, "id");
+    const cJSON* distance =
+        cJSON_GetObjectItemCaseSensitive(location, "distance");
+
+    printf("%s %s %s %s %s\n", name->valuestring, x_coordinate->valuestring,
+           y_coordinate->valuestring, location_id->valuestring,
+           distance->valuestring);
+  }
+
+  cJSON_Delete(body);
+
+  free(response.body);
+
   curl_easy_cleanup(curl);
 }
