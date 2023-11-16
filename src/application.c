@@ -14,21 +14,21 @@
 #include "string_builder.h"
 
 size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
-  size_t realsize = size * nmemb;
+  const size_t kResponseSize = size * nmemb;
 
-  char* ptr = realloc(response->body, response->size + realsize + 1);
+  char* body = realloc(response->body, response->size + kResponseSize + 1);
 
-  if (!ptr) {
+  if (!body) {
     exit(EXIT_FAILURE);
   }
 
-  response->body = ptr;
+  response->body = body;
   // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  memcpy(&(response->body[response->size]), data, realsize);
-  response->size += realsize;
-  response->body[response->size] = 0;
+  memcpy(&(response->body[response->size]), data, kResponseSize);
+  response->size += kResponseSize;
+  response->body[response->size] = '\0';
 
-  return realsize;
+  return kResponseSize;
 }
 
 void Run() {
@@ -114,29 +114,35 @@ void Run() {
 
   cJSON* body = cJSON_Parse(response.body);
 
-  const cJSON* location_list =
+  const cJSON* kLocationList =
       cJSON_GetObjectItemCaseSensitive(body, "LocationList");
-  const cJSON* stop_location =
-      cJSON_GetObjectItemCaseSensitive(location_list, "StopLocation");
+  const cJSON* kStopLocation =
+      cJSON_GetObjectItemCaseSensitive(kLocationList, "StopLocation");
 
-  const cJSON* location = NULL;
+  const cJSON* kLocation = NULL;
 
-  cJSON_ArrayForEach(location, stop_location) {
-    const cJSON* name = cJSON_GetObjectItemCaseSensitive(location, "name");
-    const cJSON* x_coordinate = cJSON_GetObjectItemCaseSensitive(location, "x");
-    const cJSON* y_coordinate = cJSON_GetObjectItemCaseSensitive(location, "y");
-    const cJSON* location_id = cJSON_GetObjectItemCaseSensitive(location, "id");
-    const cJSON* distance =
-        cJSON_GetObjectItemCaseSensitive(location, "distance");
+  cJSON_ArrayForEach(kLocation, kStopLocation) {
+    const cJSON* kName = cJSON_GetObjectItemCaseSensitive(kLocation, "name");
+    const cJSON* kXCoordinate =
+        cJSON_GetObjectItemCaseSensitive(kLocation, "x");
+    const cJSON* kYCoordinate =
+        cJSON_GetObjectItemCaseSensitive(kLocation, "y");
+    const cJSON* kLocationId =
+        cJSON_GetObjectItemCaseSensitive(kLocation, "id");
+    const cJSON* kDistance =
+        cJSON_GetObjectItemCaseSensitive(kLocation, "distance");
 
-    printf("%s %s %s %s %s\n", name->valuestring, x_coordinate->valuestring,
-           y_coordinate->valuestring, location_id->valuestring,
-           distance->valuestring);
+    printf("%s %s %s %s %s\n", kName->valuestring, kXCoordinate->valuestring,
+           kYCoordinate->valuestring, kLocationId->valuestring,
+           kDistance->valuestring);
   }
 
   cJSON_Delete(body);
 
+  // Allocated in SaveResponse
   free(response.body);
 
   curl_easy_cleanup(curl);
+
+  curl_global_cleanup();
 }
