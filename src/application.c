@@ -23,6 +23,7 @@ size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
   }
 
   response->body = ptr;
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   memcpy(&(response->body[response->size]), data, realsize);
   response->size += realsize;
   response->body[response->size] = 0;
