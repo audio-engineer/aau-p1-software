@@ -9,7 +9,7 @@
 
 #include "globals.h"
 
-char* ReadUserInput(const char* message) {
+char* ReadUserInput(const char* const message) {
   printf("%s ", message);
 
   char* input = malloc(kBufferSize * sizeof(char));

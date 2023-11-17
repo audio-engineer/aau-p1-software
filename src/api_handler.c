@@ -28,10 +28,11 @@ size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
   return kResponseSize;
 }
 
-void DoRequest(CURL* curl, const char* endpoint, Response* response) {
+void DoRequest(CURL* curl, const char* const endpoint,
+               const Response* response) {
   char url[kBufferSize * 2] = "";
 
-  const char* kRejseplanenApiBaseUrl =
+  const char* const kRejseplanenApiBaseUrl =
       "https://xmlopen.rejseplanen.dk/bin/rest.exe/";
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)

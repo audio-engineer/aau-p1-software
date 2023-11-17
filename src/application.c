@@ -20,9 +20,9 @@ void Run() {
       "#######################################################\n");
 
   CURL* curl = curl_easy_init();
-  cJSON* location_list = NULL;
-  cJSON* stop_location = NULL;
-  cJSON* location = NULL;
+  const cJSON* location_list = NULL;
+  const cJSON* stop_location = NULL;
+  const cJSON* location = NULL;
 
   if (!curl) {
     return;
@@ -43,11 +43,15 @@ void Run() {
   printf("Stops nearby:\n");
 
   cJSON_ArrayForEach(location, stop_location) {
-    const cJSON* kName = cJSON_GetObjectItemCaseSensitive(location, "name");
-    const cJSON* kXCoordinate = cJSON_GetObjectItemCaseSensitive(location, "x");
-    const cJSON* kYCoordinate = cJSON_GetObjectItemCaseSensitive(location, "y");
-    const cJSON* kLocationId = cJSON_GetObjectItemCaseSensitive(location, "id");
-    const cJSON* kDistance =
+    const cJSON* const kName =
+        cJSON_GetObjectItemCaseSensitive(location, "name");
+    const cJSON* const kXCoordinate =
+        cJSON_GetObjectItemCaseSensitive(location, "x");
+    const cJSON* const kYCoordinate =
+        cJSON_GetObjectItemCaseSensitive(location, "y");
+    const cJSON* const kLocationId =
+        cJSON_GetObjectItemCaseSensitive(location, "id");
+    const cJSON* const kDistance =
         cJSON_GetObjectItemCaseSensitive(location, "distance");
 
     printf("%s %s %s %s %s\n", kName->valuestring, kXCoordinate->valuestring,
@@ -86,10 +90,14 @@ void Run() {
   printf("Location:\n");
 
   cJSON_ArrayForEach(location, stop_location) {
-    const cJSON* kName = cJSON_GetObjectItemCaseSensitive(location, "name");
-    const cJSON* kXCoordinate = cJSON_GetObjectItemCaseSensitive(location, "x");
-    const cJSON* kYCoordinate = cJSON_GetObjectItemCaseSensitive(location, "y");
-    const cJSON* kLocationId = cJSON_GetObjectItemCaseSensitive(location, "id");
+    const cJSON* const kName =
+        cJSON_GetObjectItemCaseSensitive(location, "name");
+    const cJSON* const kXCoordinate =
+        cJSON_GetObjectItemCaseSensitive(location, "x");
+    const cJSON* const kYCoordinate =
+        cJSON_GetObjectItemCaseSensitive(location, "y");
+    const cJSON* const kLocationId =
+        cJSON_GetObjectItemCaseSensitive(location, "id");
 
     printf("%s %s %s %s\n", kName->valuestring, kXCoordinate->valuestring,
            kYCoordinate->valuestring, kLocationId->valuestring);
