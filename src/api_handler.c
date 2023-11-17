@@ -10,16 +10,18 @@
 #include "curl/easy.h"
 #include "globals.h"
 
-size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
+size_t SaveResponse(const char* const data, const size_t size,
+                    const size_t nmemb, Response* const response) {
   const size_t kResponseSize = size * nmemb;
 
-  char* body = realloc(response->body, response->size + kResponseSize + 1);
+  char* const kBody =
+      realloc(response->body, response->size + kResponseSize + 1);
 
-  if (!body) {
+  if (!kBody) {
     exit(EXIT_FAILURE);
   }
 
-  response->body = body;
+  response->body = kBody;
   // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   memcpy(&(response->body[response->size]), data, kResponseSize);
   response->size += kResponseSize;
@@ -28,7 +30,7 @@ size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
   return kResponseSize;
 }
 
-void DoRequest(CURL* curl, const char* const endpoint,
+void DoRequest(CURL* const curl, const char* const endpoint,
                const Response* response) {
   char url[kBufferSize * 2] = "";
 

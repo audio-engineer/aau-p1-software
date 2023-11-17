@@ -13,29 +13,30 @@
 
 void Run() {
   /*
-   * cURL test
+   * Rejseplanen API test
    */
   printf(
       "### Rejseplanen API test "
       "#######################################################\n");
 
-  CURL* curl = curl_easy_init();
+  CURL* const kCurl = curl_easy_init();
   const cJSON* location_list = NULL;
   const cJSON* stop_location = NULL;
   const cJSON* location = NULL;
 
-  if (!curl) {
+  if (!kCurl) {
     return;
   }
 
   Response stops_nearby_response = {NULL, 0};
 
-  DoRequest(curl, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
+  DoRequest(kCurl, "stopsNearby?coordX=55673059&coordY=12565557&format=json",
             &stops_nearby_response);
 
-  cJSON* stops_nearby_response_body = cJSON_Parse(stops_nearby_response.body);
+  cJSON* const kStopsNearbyResponseBody =
+      cJSON_Parse(stops_nearby_response.body);
 
-  location_list = cJSON_GetObjectItemCaseSensitive(stops_nearby_response_body,
+  location_list = cJSON_GetObjectItemCaseSensitive(kStopsNearbyResponseBody,
                                                    "LocationList");
   stop_location =
       cJSON_GetObjectItemCaseSensitive(location_list, "StopLocation");
@@ -59,30 +60,33 @@ void Run() {
            kDistance->valuestring);
   }
 
-  cJSON_Delete(stops_nearby_response_body);
+  cJSON_Delete(kStopsNearbyResponseBody);
 
   // Allocated in SaveResponse
   free(stops_nearby_response.body);
 
   printf("\n");
 
-  char* input = ReadUserInput("Enter a location:");
+  char* const kInput = ReadUserInput("Enter a location:");
   char location_endpoint[kBufferSize] = "";
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(location_endpoint, "location?input=", strlen("location?input="));
-  strncat(location_endpoint, input, strlen(input));
+  strncat(location_endpoint, kInput, strlen(kInput));
   strncat(location_endpoint, "&format=json", strlen("&format=json"));
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
+  // Allocated in ReadUserInput
+  free(kInput);
+
   Response start_location_response = {NULL, 0};
 
-  DoRequest(curl, location_endpoint, &start_location_response);
+  DoRequest(kCurl, location_endpoint, &start_location_response);
 
-  cJSON* start_location_response_body =
+  cJSON* const kStartLocationResponseBody =
       cJSON_Parse(start_location_response.body);
 
-  location_list = cJSON_GetObjectItemCaseSensitive(start_location_response_body,
+  location_list = cJSON_GetObjectItemCaseSensitive(kStartLocationResponseBody,
                                                    "LocationList");
   stop_location =
       cJSON_GetObjectItemCaseSensitive(location_list, "StopLocation");
@@ -103,12 +107,12 @@ void Run() {
            kYCoordinate->valuestring, kLocationId->valuestring);
   }
 
-  cJSON_Delete(start_location_response_body);
+  cJSON_Delete(kStartLocationResponseBody);
 
   // Allocated in SaveResponse
   free(start_location_response.body);
 
-  curl_easy_cleanup(curl);
+  curl_easy_cleanup(kCurl);
 
   curl_global_cleanup();
 }
