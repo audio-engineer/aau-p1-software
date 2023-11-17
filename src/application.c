@@ -9,8 +9,10 @@
 
 #include "cJSON.h"
 #include "calculations.h"
+#include "constants.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
+#include "input.h"
 #include "string_builder.h"
 
 size_t SaveResponse(char* data, size_t size, size_t nmemb, Response* response) {
@@ -51,7 +53,7 @@ void Run() {
   /*
    * String builder test
    */
-  char* output_string = malloc(kBufferSize * sizeof(char));
+  char* output_string = malloc(kInputBufferSize * sizeof(char));
   BuildString(output_string, "The number is: ", kSecondNumber);
 
   printf(
@@ -92,7 +94,7 @@ void Run() {
     return;
   }
 
-  char endpoint[kBufferSize] = "";
+  char endpoint[kInputBufferSize] = "";
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(endpoint, kRejseplanenApiBaseUrl, strlen(kRejseplanenApiBaseUrl));
@@ -141,6 +143,35 @@ void Run() {
 
   // Allocated in SaveResponse
   free(response.body);
+
+  char* input = ReadUserInput("Enter a location:");
+  char start_point[kInputBufferSize] = "";
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  strncat(start_point, kRejseplanenApiBaseUrl, strlen(kRejseplanenApiBaseUrl));
+  strncat(start_point, "location?input=", strlen("location?input="));
+  strncat(start_point, input, strlen(input));
+  strncat(start_point, "&format=json", strlen("&format=json"));
+  printf("%s\n", start_point);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+  Response start_location_response = {NULL, 0};
+
+  curl_easy_setopt(curl, CURLOPT_URL, start_point);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SaveResponse);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &start_location_response);
+
+  curl_easy_perform(curl);
+
+  cJSON* start_location_response_body =
+      cJSON_Parse(start_location_response.body);
+
+  kLocationList = cJSON_GetObjectItemCaseSensitive(start_location_response_body,
+                                                   "LocationList");
+  kStopLocation =
+      cJSON_GetObjectItemCaseSensitive(kLocationList, "StopLocation");
+
+  cJSON_Print(kStopLocation);
 
   curl_easy_cleanup(curl);
 
