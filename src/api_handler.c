@@ -1,8 +1,8 @@
 #include "api_handler.h"
 
 #include <stdlib.h>
-#ifdef __APPLE__
 #include <string.h>
+#ifdef __APPLE__
 #include <sys/_types/_size_t.h>
 #endif
 
