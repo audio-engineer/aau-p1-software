@@ -3,13 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <sys/_types/_size_t.h>
+#endif
 
-#include "constants.h"
+#include "globals.h"
 
 char* ReadUserInput(const char* message) {
   printf("%s ", message);
 
-  char* input = malloc(kInputBufferSize * sizeof(char));
+  char* input = malloc(kBufferSize * sizeof(char));
 
   if (NULL == input) {
     perror("Memory allocation failed");
@@ -17,7 +20,7 @@ char* ReadUserInput(const char* message) {
     return NULL;
   }
 
-  if (!fgets(input, kInputBufferSize, stdin)) {
+  if (!fgets(input, kBufferSize, stdin)) {
     free(input);
 
     return NULL;
