@@ -14,7 +14,7 @@ char* ReadUserInput(const char* const message) {
 
   char* input = malloc(kBufferSize * sizeof(char));
 
-  if (NULL == input) {
+  if (!input) {
     perror("Memory allocation failed");
 
     return NULL;
