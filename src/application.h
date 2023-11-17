@@ -11,8 +11,6 @@
 const char* kRejseplanenApiBaseUrl =
     "https://xmlopen.rejseplanen.dk/bin/rest.exe/";
 
-enum Constants { kBufferSize = 256 };
-
 typedef struct Response {
   char* body;
   size_t size;
