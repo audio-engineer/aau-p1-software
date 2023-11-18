@@ -34,7 +34,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(curl)
 
-file(GLOB LIBRARY_FILES application.c calculations.c string_builder.c input.c)
+file(GLOB LIBRARY_FILES api_handler.c application.c input.c)
 add_library(${PROJECT_NAME} ${LIBRARY_FILES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${cjson_SOURCE_DIR})
