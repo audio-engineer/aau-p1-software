@@ -70,21 +70,22 @@ void Run() {
   char* const kInput = ReadUserInput("Enter a location:");
   char location_endpoint[kBufferSize] = "";
 
+  char* encoded_input = curl_easy_escape(kCurl, kInput, (int)strlen(kInput));
+
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(location_endpoint, "location?input=", strlen("location?input="));
-  strncat(location_endpoint, kInput, strlen(kInput));
+  strncat(location_endpoint, encoded_input, strlen(encoded_input));
   strncat(location_endpoint, "&format=json", strlen("&format=json"));
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   // Allocated in ReadUserInput
   free(kInput);
 
-  Response start_location_response = {NULL, 0};
+  Response location_response = {NULL, 0};
 
-  DoRequest(kCurl, location_endpoint, &start_location_response);
+  DoRequest(kCurl, location_endpoint, &location_response);
 
-  cJSON* const kStartLocationResponseBody =
-      cJSON_Parse(start_location_response.body);
+  cJSON* const kStartLocationResponseBody = cJSON_Parse(location_response.body);
 
   location_list = cJSON_GetObjectItemCaseSensitive(kStartLocationResponseBody,
                                                    "LocationList");
@@ -110,7 +111,7 @@ void Run() {
   cJSON_Delete(kStartLocationResponseBody);
 
   // Allocated in SaveResponse
-  free(start_location_response.body);
+  free(location_response.body);
 
   curl_easy_cleanup(kCurl);
 
