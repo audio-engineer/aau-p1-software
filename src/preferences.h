@@ -5,9 +5,8 @@
 
 FILE* GetPreferenceFile();
 
-void SetUserPreference(FILE* user_preferences_file, const char* key,
-                       double value);
+void SetUserPreference(FILE* preferences, const char* key, double value);
 
-double GetUserPreference(FILE* user_preferences_file, const char* key);
+double GetUserPreference(FILE* preferences, const char* key);
 
 #endif  // AAU_P1_SOFTWARE_SRC_PREFERENCES_H_

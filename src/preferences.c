@@ -57,17 +57,15 @@ FILE* GetPreferenceFile() {
   return preferences;
 }
 
-void SetUserPreference(FILE* user_preferences_file, const char* key,
-                       double value) {
-  fseek(user_preferences_file, 0, SEEK_END);
-  unsigned long file_size = (unsigned long)ftell(user_preferences_file);
-  fseek(user_preferences_file, 0, SEEK_SET);
+void SetUserPreference(FILE* preferences, const char* key, double value) {
+  fseek(preferences, 0, SEEK_END);
+  unsigned long file_size = (unsigned long)ftell(preferences);
+  fseek(preferences, 0, SEEK_SET);
 
   char* file_buffer = calloc(file_size, sizeof(char));
 
-  size_t bytes =
-      fread(file_buffer, sizeof(char), file_size, user_preferences_file);
-  fseek(user_preferences_file, 0, SEEK_SET);
+  size_t bytes = fread(file_buffer, sizeof(char), file_size, preferences);
+  fseek(preferences, 0, SEEK_SET);
 
   if (bytes < file_size) {
     perror("Something happened while reading user preference");
@@ -86,6 +84,6 @@ void SetUserPreference(FILE* user_preferences_file, const char* key,
   char* serialized_json = cJSON_Print(read_file);
   serialized_json[file_size - 1] = '\n';
 
-  fputs(serialized_json, user_preferences_file);
-  fseek(user_preferences_file, 0, SEEK_SET);
+  fputs(serialized_json, preferences);
+  fseek(preferences, 0, SEEK_SET);
 }
