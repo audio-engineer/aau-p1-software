@@ -12,7 +12,7 @@
 char* ReadUserInput(const char* const message) {
   printf("%s ", message);
 
-  char* input = malloc(kBufferSize * sizeof(char));
+  char* input = calloc(kBufferSize, sizeof(char));
 
   if (!input) {
     perror("Memory allocation failed");

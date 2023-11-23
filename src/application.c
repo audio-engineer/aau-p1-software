@@ -1,3 +1,4 @@
+
 #include "application.h"
 
 #include <stdio.h>
@@ -10,8 +11,22 @@
 #include "curl/easy.h"
 #include "globals.h"
 #include "input.h"
+#include "preferences.h"
 
 void Run() {
+  /**
+   * preferences.json test
+   */
+  FILE* preferences = GetPreferenceFile();
+
+  // How to change the user preferences in the preferences file.
+  SetUserPreference(preferences, "price", 0.10);
+  SetUserPreference(preferences, "time", 0.20);
+  SetUserPreference(preferences, "environment", 0.30);
+  SetUserPreference(preferences, "health", 0.40);
+
+  fclose(preferences);
+
   /*
    * Rejseplanen API test
    */
