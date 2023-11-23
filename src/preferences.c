@@ -1,5 +1,6 @@
 #include "preferences.h"
 
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "cJSON.h"
@@ -59,16 +60,16 @@ FILE* GetPreferenceFile() {
 void SetUserPreference(FILE* user_preferences_file, const char* key,
                        double value) {
   fseek(user_preferences_file, 0, SEEK_END);
-  long file_size = ftell(user_preferences_file);
+  unsigned long file_size = (unsigned long)ftell(user_preferences_file);
   fseek(user_preferences_file, 0, SEEK_SET);
 
-  char file_buffer[file_size] = {};
+  char* file_buffer = calloc(file_size, sizeof(char));
 
-  size_t bytes = fread(file_buffer, sizeof(char), (unsigned long)file_size,
-                       user_preferences_file);
+  size_t bytes =
+      fread(file_buffer, sizeof(char), file_size, user_preferences_file);
   fseek(user_preferences_file, 0, SEEK_SET);
 
-  if ((long)bytes < file_size) {
+  if (bytes < file_size) {
     perror("Something happened while reading user preference");
 
     return;
@@ -77,6 +78,7 @@ void SetUserPreference(FILE* user_preferences_file, const char* key,
   file_buffer[file_size] = '\0';
 
   cJSON* read_file = cJSON_Parse(file_buffer);
+  free(file_buffer);
   cJSON* read_value = cJSON_GetObjectItem(read_file, key);
 
   read_value->valuedouble = value;
