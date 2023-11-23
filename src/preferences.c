@@ -11,20 +11,13 @@ void InitializePreferenceFile(FILE* preferences) {
 
   cJSON* json_preferences = cJSON_CreateObject();
 
-  cJSON* price_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "price", price_value);
-
-  cJSON* time_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "time", time_value);
-
-  cJSON* environment_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "environment", environment_value);
-
-  cJSON* health_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "health", health_value);
+  //cleaner implementation
+  cJSON_AddNumberToObject(json_preferences,"price", kValue);
+  cJSON_AddNumberToObject(json_preferences,"time", kValue);
+  cJSON_AddNumberToObject(json_preferences,"environment", kValue);
+  cJSON_AddNumberToObject(json_preferences,"health", kValue);
 
   serialized_json = cJSON_Print(json_preferences);
-
   fputs(serialized_json, preferences);
   fseek(preferences, 0, SEEK_SET);
 }

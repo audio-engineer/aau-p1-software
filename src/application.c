@@ -21,14 +21,14 @@ void Run() {
 
   // How to change the user preferences in the preferences file.
   // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  SetUserPreference(preferences, "price", 0.10);
-  SetUserPreference(preferences, "time", 0.20);
-  SetUserPreference(preferences, "environment", 0.30);
-  SetUserPreference(preferences, "health", 0.40);
+  SetUserPreference(preferences, "price", 0.55);
+  SetUserPreference(preferences, "time", 0.50);
+  SetUserPreference(preferences, "environment", 0.55);
+  SetUserPreference(preferences, "health", 0.55);
   // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
   fclose(preferences);
-
+  return;
   /*
    * Rejseplanen API test
    */
