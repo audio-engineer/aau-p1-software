@@ -23,7 +23,6 @@ void Run() {
   SetUserPreference("environment", 0.30);
   SetUserPreference("health", 0.40);
   // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-
   /*
    * Rejseplanen API test
    */
