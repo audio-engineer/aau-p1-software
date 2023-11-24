@@ -16,9 +16,11 @@ void InitializePreferenceFile() {
   cJSON_AddNumberToObject(kJsonPreferences, "health", kInitialValue);
 
   char* const kSerializedJsonWithNull = cJSON_Print(kJsonPreferences);
+  const unsigned long kSerializedJsonWithNullLength =
+      strlen(kSerializedJsonWithNull);
   char* const kSerializedJsonWithNewline =
-      realloc(kSerializedJsonWithNull, strlen(kSerializedJsonWithNull) + 1);
-  kSerializedJsonWithNewline[strlen(kSerializedJsonWithNull)] = '\n';
+      realloc(kSerializedJsonWithNull, kSerializedJsonWithNullLength + 1);
+  kSerializedJsonWithNewline[kSerializedJsonWithNullLength] = '\n';
 
   FILE* preferences = fopen("preferences.json", "w");
   fputs(kSerializedJsonWithNewline, preferences);
@@ -64,9 +66,11 @@ void SetUserPreference(const char* key, double value) {
   kJsonValue->valuedouble = value;
 
   char* const kSerializedJsonWithNull = cJSON_Print(kJsonPreferences);
+  const unsigned long kSerializedJsonWithNullLength =
+      strlen(kSerializedJsonWithNull);
   char* const kSerializedJsonNewlineWithNewline =
-      realloc(kSerializedJsonWithNull, strlen(kSerializedJsonWithNull) + 1);
-  kSerializedJsonNewlineWithNewline[strlen(kSerializedJsonWithNull)] = '\n';
+      realloc(kSerializedJsonWithNull, kSerializedJsonWithNullLength + 1);
+  kSerializedJsonNewlineWithNewline[kSerializedJsonWithNullLength] = '\n';
 
   preferences = fopen("preferences.json", "w");
   fputs(kSerializedJsonNewlineWithNewline, preferences);
