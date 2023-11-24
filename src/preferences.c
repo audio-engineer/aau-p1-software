@@ -1,89 +1,79 @@
 #include "preferences.h"
 
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 
 #include "cJSON.h"
 
-void InitializePreferenceFile(FILE* preferences) {
-  const double kValue = 0.25;
-  char* serialized_json = NULL;
+void InitializePreferenceFile() {
+  const double kInitialValue = 0.25;
 
-  cJSON* json_preferences = cJSON_CreateObject();
+  cJSON* const kJsonPreferences = cJSON_CreateObject();
 
-  cJSON* price_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "price", price_value);
+  cJSON_AddNumberToObject(kJsonPreferences, "price", kInitialValue);
+  cJSON_AddNumberToObject(kJsonPreferences, "time", kInitialValue);
+  cJSON_AddNumberToObject(kJsonPreferences, "environment", kInitialValue);
+  cJSON_AddNumberToObject(kJsonPreferences, "health", kInitialValue);
 
-  cJSON* time_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "time", time_value);
+  char* const kSerializedJsonWithNull = cJSON_Print(kJsonPreferences);
+  const unsigned long kSerializedJsonWithNullLength =
+      strlen(kSerializedJsonWithNull);
+  char* const kSerializedJsonWithNewline =
+      realloc(kSerializedJsonWithNull, kSerializedJsonWithNullLength + 1);
+  kSerializedJsonWithNewline[kSerializedJsonWithNullLength] = '\n';
 
-  cJSON* environment_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "environment", environment_value);
-
-  cJSON* health_value = cJSON_CreateNumber(kValue);
-  cJSON_AddItemToObject(json_preferences, "health", health_value);
-
-  serialized_json = cJSON_Print(json_preferences);
-
-  fputs(serialized_json, preferences);
-  fseek(preferences, 0, SEEK_SET);
+  FILE* preferences = fopen("preferences.json", "w");
+  fputs(kSerializedJsonWithNewline, preferences);
+  fclose(preferences);
+  free(kSerializedJsonWithNewline);
 }
 
-FILE* GetPreferenceFile() {
-  FILE* preferences = NULL;
-
-  if (access("preferences.json", F_OK) != 0) {
-    preferences = fopen("preferences.json", "w+");
-
-    if (!preferences) {
-      perror("File creation failed");
-
-      return NULL;
-    }
-
-    InitializePreferenceFile(preferences);
-
-    return preferences;
-  }
-
-  preferences = fopen("preferences.json", "r+");
+void SetUserPreference(const char* key, double value) {
+  FILE* preferences = fopen("preferences.json", "r");
 
   if (!preferences) {
-    perror("File opening failed");
+    InitializePreferenceFile();
 
-    return NULL;
+    preferences = fopen("preferences.json", "r");
   }
 
-  return preferences;
-}
-
-void SetUserPreference(FILE* preferences, const char* key, double value) {
   fseek(preferences, 0, SEEK_END);
-  unsigned long file_size = (unsigned long)ftell(preferences);
+  const unsigned long kFileSize = (unsigned long)ftell(preferences);
   fseek(preferences, 0, SEEK_SET);
 
-  char* file_buffer = calloc(file_size, sizeof(char));
+  char* const kFileBuffer = calloc(kFileSize, sizeof(char));
 
-  size_t bytes = fread(file_buffer, sizeof(char), file_size, preferences);
-  fseek(preferences, 0, SEEK_SET);
+  size_t const kBytes =
+      fread(kFileBuffer, sizeof(char), kFileSize, preferences);
 
-  if (bytes < file_size) {
+  fclose(preferences);
+
+  if (kBytes < kFileSize) {
     perror("Something happened while reading user preference");
+
+    free(kFileBuffer);
 
     return;
   }
 
-  file_buffer[file_size] = '\0';
+  kFileBuffer[kFileSize - 1] = '\0';
 
-  cJSON* read_file = cJSON_Parse(file_buffer);
-  free(file_buffer);
-  cJSON* read_value = cJSON_GetObjectItem(read_file, key);
+  const cJSON* const kJsonPreferences = cJSON_Parse(kFileBuffer);
+  free(kFileBuffer);
 
-  read_value->valuedouble = value;
+  cJSON* const kJsonValue = cJSON_GetObjectItem(kJsonPreferences, key);
 
-  char* serialized_json = cJSON_Print(read_file);
-  serialized_json[file_size - 1] = '\n';
+  kJsonValue->valuedouble = value;
 
-  fputs(serialized_json, preferences);
-  fseek(preferences, 0, SEEK_SET);
+  char* const kSerializedJsonWithNull = cJSON_Print(kJsonPreferences);
+  const unsigned long kSerializedJsonWithNullLength =
+      strlen(kSerializedJsonWithNull);
+  char* const kSerializedJsonNewlineWithNewline =
+      realloc(kSerializedJsonWithNull, kSerializedJsonWithNullLength + 1);
+  kSerializedJsonNewlineWithNewline[kSerializedJsonWithNullLength] = '\n';
+
+  preferences = fopen("preferences.json", "w");
+  fputs(kSerializedJsonNewlineWithNewline, preferences);
+  fclose(preferences);
+  free(kSerializedJsonNewlineWithNewline);
 }

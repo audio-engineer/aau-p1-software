@@ -3,9 +3,7 @@
 
 #include <stdio.h>
 
-FILE* GetPreferenceFile();
-
-void SetUserPreference(FILE* preferences, const char* key, double value);
+void SetUserPreference(const char* key, double value);
 
 double GetUserPreference(FILE* preferences, const char* key);
 
