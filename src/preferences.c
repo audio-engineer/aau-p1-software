@@ -97,9 +97,8 @@ double GetUserPreference(const char* key) {
     fclose(user_preferences);
     return value;
   }
-  size_t bytes_read = fread(kFileBuffer, sizeof(char),
-                           kFileSize,
-                           user_preferences);
+  size_t bytes_read =
+      fread(kFileBuffer, sizeof(char), kFileSize, user_preferences);
   fclose(user_preferences);
 
   if (bytes_read != (size_t)kFileSize) {
