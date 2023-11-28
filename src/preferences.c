@@ -78,7 +78,7 @@ void SetUserPreference(const char* key, double value) {
   free(kSerializedJsonNewlineWithNewline);
 }
 
-double GetUserPreference(const char* key) {
+double GetUserPreference(const char* const key) {
   double value = 0;
   FILE* user_preferences = fopen("preferences.json", "r");
 
@@ -91,36 +91,36 @@ double GetUserPreference(const char* key) {
   unsigned long kFileSize = (unsigned long)ftell(user_preferences);
   fseek(user_preferences, 0, SEEK_SET);
 
-  char* kFileBuffer = (char*)calloc(kFileSize + 1, sizeof(char));
-  if (kFileBuffer == NULL) {
+  char* kFileBuffer = calloc(kFileSize + 1, sizeof(char));
+  if (!kFileBuffer) {
     printf("Error allocating memory for file buffer!\n");
     fclose(user_preferences);
     return value;
   }
-  size_t bytes_read =
+  const unsigned long kBytes =
       fread(kFileBuffer, sizeof(char), kFileSize, user_preferences);
   fclose(user_preferences);
 
-  if (bytes_read != (size_t)kFileSize) {
+  if (kBytes != kFileSize) {
     printf("Error reading user preferences file!\n");
     free(kFileBuffer);
     return value;
   }
 
   // kFileBuffer contains the content of the file
-  cJSON* save_file = cJSON_Parse(kFileBuffer);
+  cJSON* json_preferences = cJSON_Parse(kFileBuffer);
   free(kFileBuffer);
 
-  if (save_file == NULL) {
+  if (!json_preferences) {
     printf("Error parsing JSON file!\n");
     return value;
   }
 
-  cJSON* file_item = cJSON_GetObjectItem(save_file, key);
+  cJSON* file_item = cJSON_GetObjectItem(json_preferences, key);
 
   value = cJSON_GetNumberValue(file_item);
 
-  cJSON_Delete(save_file);
+  cJSON_Delete(json_preferences);
 
   return value;
 }
