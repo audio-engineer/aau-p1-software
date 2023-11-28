@@ -82,7 +82,7 @@ double GetUserPreference(const char* const key) {
   double value = 0;
   FILE* user_preferences = fopen("preferences.json", "r");
 
-  if (user_preferences == NULL) {
+  if (!user_preferences) {
     printf("Error opening user preferences file!\n");
     return value;
   }
