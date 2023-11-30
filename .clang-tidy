@@ -13,3 +13,13 @@ readability-*'
 FormatStyle: file
 CheckOptions:
   concurrency-mt-unsafe.FunctionSet: posix
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.EnumConstantCase: CamelCase
+  readability-identifier-naming.EnumConstantPrefix: k
+  readability-identifier-naming.FunctionCase: CamelCase
+  readability-identifier-naming.LocalVariableCase: lower_case
+  readability-identifier-naming.LocalConstantCase: CamelCase
+  readability-identifier-naming.LocalConstantPrefix: k
+  readability-identifier-naming.ParameterCase: lower_case
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.TypedefCase: CamelCase

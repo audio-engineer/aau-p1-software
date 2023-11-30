@@ -1,0 +1,10 @@
+{
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "cmake.buildDirectory": "${workspaceFolder}/cmake-build-debug/",
+  "cmake.parallelJobs": 10,
+  "files.associations": {
+    "*.c": "c",
+    "*.h": "c",
+    "*.cc": "cpp"
+  }
+}
