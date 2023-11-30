@@ -4,6 +4,7 @@
 
 You need to have the following software installed on your development system:
 
-- [`CMake`](https://en.wikipedia.org/wiki/CMake)
-- [`pkg-config`](https://en.wikipedia.org/wiki/Pkg-config)
-- [`openssl`](https://en.wikipedia.org/wiki/OpenSSL)
+- [`CMake`](https://cmake.org/)
+- [`Ninja`](https://ninja-build.org/)
+- [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
+- [`openssl`](https://www.openssl.org/)
