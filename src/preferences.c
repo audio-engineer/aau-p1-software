@@ -1,7 +1,11 @@
 #include "preferences.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <sys/_types/_size_t.h>
+#endif
 
 #include "cJSON.h"
 
@@ -28,7 +32,7 @@ void InitializePreferenceFile() {
   free(kSerializedJsonWithNewline);
 }
 
-void SetUserPreference(const char* key, double value) {
+void SetUserPreference(const char* const key, const double value) {
   FILE* preferences = fopen("preferences.json", "r");
 
   if (!preferences) {
@@ -43,7 +47,7 @@ void SetUserPreference(const char* key, double value) {
 
   char* const kFileBuffer = calloc(kFileSize, sizeof(char));
 
-  size_t const kBytes =
+  const size_t kBytes =
       fread(kFileBuffer, sizeof(char), kFileSize, preferences);
 
   fclose(preferences);
@@ -88,10 +92,10 @@ double GetUserPreference(const char* const key) {
   }
 
   fseek(user_preferences, 0, SEEK_END);
-  unsigned long kFileSize = (unsigned long)ftell(user_preferences);
+  const unsigned long kFileSize = (unsigned long)ftell(user_preferences);
   fseek(user_preferences, 0, SEEK_SET);
 
-  char* kFileBuffer = calloc(kFileSize + 1, sizeof(char));
+  char* const kFileBuffer = calloc(kFileSize + 1, sizeof(char));
   if (!kFileBuffer) {
     printf("Error allocating memory for file buffer!\n");
     fclose(user_preferences);
