@@ -1,4 +1,5 @@
 #include "calculations.h"
+
 #include <stdio.h>
 
 #define EarthRadius 6371  // Earth radius in kilometers
@@ -31,4 +32,3 @@ double CalcDist(double lat1, double lon1, double lat2, double lon2) {
 
   return distance;
 }
-
