@@ -10,6 +10,13 @@ typedef struct CalculatePriceParameters {
   int fuel_efficiency;
 } CalculatePriceParameters;
 
+typedef struct CalculateDistanceParameters {
+  double latitude_first;
+  double longitude_first;
+  double latitude_second;
+  double longitude_second;
+} CalculateDistanceParameters;
+
 enum CalculationConstants {
   kZoneSizeAverage = 6,
   kGasPriceAverage = 14,
@@ -18,23 +25,16 @@ enum CalculationConstants {
   kBikePriceAverage = 100,
   kCarMaintenancePriceAverage = 850,
   kTrainPriceTableSize = 50,
-  kUngNormalprice = 2487,
+  kUngNormalPrice = 2487,
   kUngExtraPrice = 663
 };
 
 enum TravelTypeCase { kTrain = 't', kCar = 'c', kBike = 'b', kWalk = 'w' };
 
-enum { kEarthRadius = 6371000 };
+enum MeasurementConstants { kEarthRadius = 6371000 };
 
 double const kMillion = 1000000.0;
 double const kRadians = M_PI / 180.0;
-
-typedef struct CalculateDistanceParameters {
-  double latitude_first;
-  double longitude_first;
-  double latitude_second;
-  double longitude_second;
-} CalculateDistanceParameters;
 
 const int kTrainPriceTable[kTrainPriceTableSize] = {
     0,    390,  390,  540,  720,  900,  1050, 1200, 1350, 1500,
@@ -44,11 +44,11 @@ const int kTrainPriceTable[kTrainPriceTableSize] = {
     4320, 4350, 4380, 4410, 4440, 4470, 4500, 4530, 4560, 4590};
 
 double CalculateDistance(
-    CalculateDistanceParameters* calculate_distance_parameters);
+    const CalculateDistanceParameters* calculate_distance_parameters);
 
-int CalculatePrice(CalculatePriceParameters* calculate_price_parameters);
+int CalculatePrice(const CalculatePriceParameters* calculate_price_parameters);
 
-char CalculateTime(char departure_time[], char arrival_time[]);
+char CalculateTime(char* departure_time, char* arrival_time);
 
 int CalculateCO2();
 
