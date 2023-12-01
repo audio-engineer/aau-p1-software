@@ -1,5 +1,6 @@
 #include "calculations.h"
 
+#include <stdio.h>
 #include <math.h>
 
 double CalculateDistance(
@@ -33,3 +34,66 @@ double CalculateDistance(
 
   return distance;
 }
+
+int CalculatePrice(CalculatePriceParameters* const calculate_price_parameters) {
+  char type = calculate_price_parameters->type;
+  double distance = calculate_price_parameters->distance;
+  bool is_ung = calculate_price_parameters->is_ung;
+  int fuel_efficiency = calculate_price_parameters->fuel_efficiency;
+
+  int price = 0;
+  int zones = 0;
+
+  switch (type) {
+    case kTrain:
+      zones = (int)distance / kZoneSizeAverage;
+
+      if (zones > kTrainPriceTableSize) {
+        zones = kTrainPriceTableSize;
+      }
+
+      price = kTrainPriceTable[zones];
+
+      if (is_ung) {
+        price = (price - kUngNormalprice) / 2 + kUngExtraPrice;
+      }
+      break;
+
+    case kCar:
+      break;
+
+    case kBike:
+      price = kBikePriceAverage;
+      break;
+
+    case kWalk:
+      price = 0;
+      break;
+
+    default:
+      perror("Invalid type");
+      return 0;
+
+      return price;
+  }
+
+  if (type == 'c') {
+    if (fuel_efficiency == 0) {
+      price = (distance / 60) * 25 * 40;
+    } else {
+      if (fuel_efficiency == -1) {
+        fuel_efficiency = kFuelEfficiencyAverage;
+      }
+      price = (distance / fuel_efficiency) * kGasPriceAverage * 40;
+    }
+    price += kCarMaintenancePriceAverage;
+  }
+
+  return price;
+}
+
+/*
+int CalculateTime()
+int CalculateCO2()
+int CalculateComfort()
+*/
