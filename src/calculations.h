@@ -3,13 +3,6 @@
 
 #include <math.h>
 
-typedef struct CalculatePriceParameters {
-  char type;
-  double distance;
-  bool is_ung;
-  int fuel_efficiency;
-} CalculatePriceParameters;
-
 typedef struct CalculateDistanceParameters {
   double latitude_first;
   double longitude_first;
@@ -17,19 +10,34 @@ typedef struct CalculateDistanceParameters {
   double longitude_second;
 } CalculateDistanceParameters;
 
+typedef struct CalculatePriceParameters {
+  char type;
+  double distance;
+  bool is_ung;
+  int fuel_efficiency;
+} CalculatePriceParameters;
+
 enum CalculationConstants {
   kZoneSizeAverage = 6,
-  kGasPriceAverage = 14,
   kFuelEfficiencyAverage = 10,
-  kElectricityPriceAverage = 25,
+  kElEfficiencyAverage = 60,
   kBikePriceAverage = 100,
   kCarMaintenancePriceAverage = 850,
   kTrainPriceTableSize = 50,
   kUngNormalPrice = 2487,
-  kUngExtraPrice = 663
+  kUngExtraPrice = 663,
+  kDaysInWorkMonth = 20,
+  kKrPerKmEl = 25,
+  kKrPerKmGas = 14,
 };
 
-enum TravelTypeCase { kTrain = 't', kCar = 'c', kBike = 'b', kWalk = 'w' };
+enum TravelTypeCase {
+  kTrain = 't',
+  kCar = 'c',
+  kEl = 'e',
+  kBike = 'b',
+  kWalk = 'w'
+};
 
 enum MeasurementConstants { kEarthRadius = 6371000 };
 

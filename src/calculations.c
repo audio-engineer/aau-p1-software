@@ -50,8 +50,8 @@ int CalculatePrice(
     case kTrain:
       zones = (int)kDistance / kZoneSizeAverage;
 
-      if (zones > kTrainPriceTableSize) {
-        zones = kTrainPriceTableSize;
+      if (zones > kTrainPriceTableSize - 1) {
+        zones = kTrainPriceTableSize - 1;
       }
 
       price = kTrainPriceTable[zones];
@@ -63,16 +63,18 @@ int CalculatePrice(
       break;
 
     case kCar:
-      if (fuel_efficiency == 0) {
-        price = ((int)kDistance / 60) * 25 * 40;
-      } else {
-        if (fuel_efficiency == -1) {
-          fuel_efficiency = kFuelEfficiencyAverage;
-        }
-
-        price = ((int)kDistance / fuel_efficiency) * kGasPriceAverage * 40;
+      if (!fuel_efficiency) {
+        fuel_efficiency = kFuelEfficiencyAverage;
       }
+      price =
+          ((int)kDistance / fuel_efficiency) * kKrPerKmGas * kDaysInWorkMonth;
+      price += kCarMaintenancePriceAverage;
 
+      break;
+
+    case kEl:
+      price = ((int)kDistance / kElEfficiencyAverage) * kKrPerKmEl *
+              kDaysInWorkMonth;
       price += kCarMaintenancePriceAverage;
 
       break;
