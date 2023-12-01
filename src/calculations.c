@@ -1,34 +1,35 @@
 #include "calculations.h"
 
-#include <stdio.h>
+#include <math.h>
 
-#define EarthRadius 6371  // Earth radius in kilometers
-double const kMillion = 1000000.0;
-double const kPi = 3.14159265358979323846;
-double const kRadians = kPi / 180.0;
+double CalculateDistance(
+    CalculateDistanceParameters* const calculate_distance_parameters) {
+  double latitude_first = calculate_distance_parameters->latitude_first;
+  double longitude_first = calculate_distance_parameters->longitude_first;
+  double latitude_second = calculate_distance_parameters->latitude_second;
+  double longitude_second = calculate_distance_parameters->longitude_second;
 
-double CalcDist(double lat1, double lon1, double lat2, double lon2) {
   // Convert latitude and longitude from degrees to radians
+  latitude_first /= kMillion;
+  latitude_second /= kMillion;
+  longitude_first /= kMillion;
+  longitude_second /= kMillion;
 
-  lat1 /= kMillion;
-  lat2 /= kMillion;
-  lon1 /= kMillion;
-  lon2 /= kMillion;
-
-  lat1 = lat1 * kRadians;
-  lon1 = lon1 * kRadians;
-  lat2 = lat2 * kRadians;
-  lon2 = lon2 * kRadians;
+  latitude_first = latitude_first * kRadians;
+  longitude_first = longitude_first * kRadians;
+  latitude_second = latitude_second * kRadians;
+  longitude_second = longitude_second * kRadians;
 
   // Calculate differences
-  double deltalat = lat2 - lat1;
-  double deltalon = lon2 - lon1;
+  double deltalat = latitude_second - latitude_first;
+  double deltalon = longitude_second - longitude_first;
 
   // Haversine formula
-  double a = sin(deltalat / 2) * sin(deltalat / 2) +
-             cos(lat1) * cos(lat2) * sin(deltalon / 2) * sin(deltalon / 2);
-  double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-  double distance = EarthRadius * c;
+  double haversine_a = sin(deltalat / 2) * sin(deltalat / 2) +
+                       cos(latitude_first) * cos(latitude_second) *
+                           sin(deltalon / 2) * sin(deltalon / 2);
+  double haversine_c = 2 * atan2(sqrt(haversine_a), sqrt(1 - haversine_a));
+  double distance = kEarthRadius * haversine_c;
 
   return distance;
 }

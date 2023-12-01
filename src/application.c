@@ -1,15 +1,7 @@
 #include "application.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "api_handler.h"
-#include "cJSON.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
-#include "globals.h"
-#include "input.h"
 #include "preferences.h"
 #include "trip.h"
 

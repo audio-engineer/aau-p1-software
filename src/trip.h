@@ -3,6 +3,6 @@
 
 #include "curl/curl.h"
 
-void Trip(CURL* const curl);
+void Trip(CURL* curl);
 
 #endif  // AAU_P1_SOFTWARE_SRC_TRIP_H_
