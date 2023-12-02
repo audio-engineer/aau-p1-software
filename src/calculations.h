@@ -19,16 +19,20 @@ typedef struct CalculatePriceParameters {
 
 enum CalculationConstants {
   kZoneSizeAverage = 6,
-  kFuelEfficiencyAverage = 10,
-  kElEfficiencyAverage = 60,
-  kBikePriceAverage = 100,
-  kCarMaintenancePriceAverage = 850,
   kTrainPriceTableSize = 50,
   kUngNormalPrice = 2487,
   kUngExtraPrice = 663,
-  kDaysInWorkMonth = 20,
+
+  kFuelEfficiencyAverage = 10,
+  kElEfficiencyAverage = 60,
+
   kKrPerKmEl = 25,
   kKrPerKmGas = 14,
+
+  kCarMaintenancePriceAverage = 850,
+  kBikeMaintenancePriceAverage = 100,
+
+  kDaysInWorkMonth = 20
 };
 
 enum TravelTypeCase {

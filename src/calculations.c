@@ -66,21 +66,23 @@ int CalculatePrice(
       if (!fuel_efficiency) {
         fuel_efficiency = kFuelEfficiencyAverage;
       }
-      price =
-          ((int)kDistance / fuel_efficiency) * kKrPerKmGas * kDaysInWorkMonth;
+
+      price = ((int)kDistance * kKrPerKmGas * kDaysInWorkMonth * 2) /
+              fuel_efficiency;
+
       price += kCarMaintenancePriceAverage;
 
       break;
 
     case kEl:
-      price = ((int)kDistance / kElEfficiencyAverage) * kKrPerKmEl *
-              kDaysInWorkMonth;
+      price = ((int)kDistance * kKrPerKmEl * kDaysInWorkMonth * 2) /
+              kElEfficiencyAverage;
       price += kCarMaintenancePriceAverage;
 
       break;
 
     case kBike:
-      price = kBikePriceAverage;
+      price = kBikeMaintenancePriceAverage;
 
       break;
 
