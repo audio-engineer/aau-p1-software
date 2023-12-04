@@ -2,13 +2,44 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+enum CalculationConstants {
+  kAverageZoneSize = 6,
+  kTrainPriceTableSize = 50,
+  kUngNormalPrice = 2487,
+  kUngExtraPrice = 663,
+
+  kAverageFuelEfficiency = 10,
+  kEvAverageEfficiency = 60,
+
+  kEvPricePerKm = 25,
+  kGasPricePerKm = 14,
+
+  kCarAverageMaintenancePrice = 850,
+  kBikeAverageMaintenancePrice = 100,
+
+  kDaysInWorkMonth = 20,
+
+  kEarthRadius = 6371000
+};
+
+double const kMillion = 1000000.0;
+double const kRadians = M_PI / 180.0;
+
+const int kTrainPriceTable[kTrainPriceTableSize] = {
+    0,    390,  390,  540,  720,  900,  1050, 1200, 1350, 1500,
+    1650, 1830, 2040, 2190, 2400, 2580, 2730, 2880, 2970, 3120,
+    3210, 3330, 3390, 3540, 3660, 3750, 3810, 3870, 3960, 3990,
+    4020, 4050, 4080, 4110, 4140, 4170, 4200, 4230, 4260, 4290,
+    4320, 4350, 4380, 4410, 4440, 4470, 4500, 4530, 4560, 4590};
 
 double CalculateDistance(
     const CalculateDistanceParameters* const calculate_distance_parameters) {
-  double latitude_first = calculate_distance_parameters->latitude_first;
-  double longitude_first = calculate_distance_parameters->longitude_first;
-  double latitude_second = calculate_distance_parameters->latitude_second;
-  double longitude_second = calculate_distance_parameters->longitude_second;
+  double latitude_first = calculate_distance_parameters->kLatitudeFirst;
+  double longitude_first = calculate_distance_parameters->kLongitudeFirst;
+  double latitude_second = calculate_distance_parameters->kLatitudeSecond;
+  double longitude_second = calculate_distance_parameters->kLongitudeSecond;
 
   // Convert latitude and longitude from degrees to radians
   latitude_first /= kMillion;
@@ -38,17 +69,18 @@ double CalculateDistance(
 
 int CalculatePrice(
     const CalculatePriceParameters* const calculate_price_parameters) {
-  const char kType = calculate_price_parameters->type;
-  const double kDistance = calculate_price_parameters->distance;
-  const bool kIsUng = calculate_price_parameters->is_ung;
-  int fuel_efficiency = calculate_price_parameters->fuel_efficiency;
+  const ModeOfTransport kModeOfTransport =
+      calculate_price_parameters->kModeOfTransport;
+  const int kDistance = calculate_price_parameters->kTripDistance;
+  const bool kIsUng = calculate_price_parameters->kIsUng;
+  int fuel_efficiency = calculate_price_parameters->kFuelEfficiency;
 
-  int price = 0;
   int zones = 0;
+  int price = 0;
 
-  switch (kType) {
+  switch (kModeOfTransport) {
     case kTrain:
-      zones = (int)kDistance / kZoneSizeAverage;
+      zones = kDistance / kAverageZoneSize;
 
       if (zones > kTrainPriceTableSize - 1) {
         zones = kTrainPriceTableSize - 1;
@@ -64,37 +96,35 @@ int CalculatePrice(
 
     case kCar:
       if (!fuel_efficiency) {
-        fuel_efficiency = kFuelEfficiencyAverage;
+        fuel_efficiency = kAverageFuelEfficiency;
       }
 
-      price = ((int)kDistance * kKrPerKmGas * kDaysInWorkMonth * 2) /
-              fuel_efficiency;
+      price =
+          (kDistance * kGasPricePerKm * kDaysInWorkMonth * 2) / fuel_efficiency;
 
-      price += kCarMaintenancePriceAverage;
+      price += kCarAverageMaintenancePrice;
 
       break;
 
-    case kEl:
-      price = ((int)kDistance * kKrPerKmEl * kDaysInWorkMonth * 2) /
-              kElEfficiencyAverage;
-      price += kCarMaintenancePriceAverage;
+    case kEv:
+      price = (kDistance * kEvPricePerKm * kDaysInWorkMonth * 2) /
+              kEvAverageEfficiency;
+      price += kCarAverageMaintenancePrice;
 
       break;
 
     case kBike:
-      price = kBikeMaintenancePriceAverage;
+      price = kBikeAverageMaintenancePrice;
 
       break;
 
     case kWalk:
-      price = 0;
-
       break;
 
     default:
       perror("Invalid type");
 
-      return 0;
+      return EXIT_FAILURE;
   }
 
   return price;

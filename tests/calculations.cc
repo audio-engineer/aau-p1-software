@@ -40,7 +40,7 @@ TEST(CalculatePriceTest, Car200kmYoung33) {
 }
 
 TEST(CalculatePriceTest, Ev50kmAdult10) {
-  const CalculatePriceParameters kParameters = {kEl, 50, false, 10};
+  const CalculatePriceParameters kParameters = {kEv, 50, false, 10};
   EXPECT_EQ(1683, CalculatePrice(&kParameters));
 }
 
