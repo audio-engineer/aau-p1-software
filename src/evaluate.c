@@ -28,11 +28,11 @@ void EvaluateTestingFunction() {
   // Population the struct array.
   for (size_t i = 0; i < size_of_struct_array; i++) {
     // NOLINTBEGIN(concurrency-mt-unsafe)
-    trip_arr[i].price_ = (double)(rand() % kArbitrarySizeOfValuesInTest);
-    trip_arr[i].comfortability_ =
+    trip_arr[i].price = (double)(rand() % kArbitrarySizeOfValuesInTest);
+    trip_arr[i].comfortability =
         (double)(rand() % kArbitrarySizeOfValuesInTest);
-    trip_arr[i].time_ = (double)(rand() % kArbitrarySizeOfValuesInTest);
-    trip_arr[i].emissions_ = (double)(rand() % kArbitrarySizeOfValuesInTest);
+    trip_arr[i].time = (double)(rand() % kArbitrarySizeOfValuesInTest);
+    trip_arr[i].emissions = (double)(rand() % kArbitrarySizeOfValuesInTest);
     // NOLINTEND(concurrency-mt-unsafe)
   }
   Evaluate(trip_arr, size_of_struct_array);
@@ -94,33 +94,33 @@ void CalculateScore(
 void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
   // Calculating score.
   CalculateScoreParameters price_params = {size_of_struct_array,
-                                           offsetof(TripData, price_),
-                                           offsetof(TripData, price_score_), 1};
+                                           offsetof(TripData, price),
+                                           offsetof(TripData, price_score), 1};
   CalculateScore(trip_arr, &price_params);
 
   CalculateScoreParameters comfortability_params = {
-      size_of_struct_array,offsetof(TripData, comfortability_),
-      offsetof(TripData, comfortability_score_), 0};
+      size_of_struct_array, offsetof(TripData, comfortability),
+      offsetof(TripData, comfortability_score), 0};
   CalculateScore(trip_arr, &comfortability_params);
 
   CalculateScoreParameters time_params = {size_of_struct_array,
-                                          offsetof(TripData, time_),
-                                          offsetof(TripData, time_score_), 1};
+                                          offsetof(TripData, time),
+                                          offsetof(TripData, time_score), 1};
   CalculateScore(trip_arr, &time_params);
 
   CalculateScoreParameters emissions_params = {
-      size_of_struct_array, offsetof(TripData, emissions_),
-      offsetof(TripData, emissions_score_), 0};
+      size_of_struct_array, offsetof(TripData, emissions),
+      offsetof(TripData, emissions_score), 0};
   CalculateScore(trip_arr, &emissions_params);
 
   // Calculate overall_score using all other scores.
   for (size_t i = 0; i < size_of_struct_array; i++) {
-    trip_arr[i].overall_score_ =
-        (GetUserPreference("price") / 1.0) * trip_arr[i].price_score_ +
+    trip_arr[i].overall_score =
+        (GetUserPreference("price") / 1.0) * trip_arr[i].price_score +
         (GetUserPreference("health") / 1.0) *
-            trip_arr[i].comfortability_score_ +
-        (GetUserPreference("time") / 1.0) * trip_arr[i].time_score_ +
-        (GetUserPreference("environment") / 1.0) * trip_arr[i].emissions_score_;
+            trip_arr[i].comfortability_score +
+        (GetUserPreference("time") / 1.0) * trip_arr[i].time_score +
+        (GetUserPreference("environment") / 1.0) * trip_arr[i].emissions_score;
   }
 
   // Print of the results.
@@ -129,9 +129,9 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
     printf(
         "Trip %zu: P: %6.2lf H: %6.2lf T: %6.2lf E: %6.2lf --- Ps: %2.2lf Hs: "
         "%2.2lf Ts: %2.2lf Es: %2.2lf --- Os: %2.2lf.\n",
-        i + 1, trip_arr[i].price_, trip_arr[i].comfortability_,
-        trip_arr[i].time_, trip_arr[i].emissions_, trip_arr[i].price_score_,
-        trip_arr[i].comfortability_score_, trip_arr[i].time_score_,
-        trip_arr[i].emissions_score_, trip_arr[i].overall_score_);
+        i + 1, trip_arr[i].price, trip_arr[i].comfortability,
+        trip_arr[i].time, trip_arr[i].emissions, trip_arr[i].price_score,
+        trip_arr[i].comfortability_score, trip_arr[i].time_score,
+        trip_arr[i].emissions_score, trip_arr[i].overall_score);
   }
 }

@@ -2,9 +2,9 @@
 
 #include "curl/curl.h"
 #include "curl/easy.h"
+#include "evaluate.h"
 #include "preferences.h"
 #include "trip.h"
-#include "evaluate.h"
 
 void Run() {
   /**

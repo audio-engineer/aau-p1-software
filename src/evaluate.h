@@ -9,15 +9,15 @@
    decided. */
 typedef struct TripData {
   // int trip_id_;
-  double overall_score_;
-  double price_;
-  double price_score_;
-  double comfortability_;
-  double comfortability_score_;
-  double time_;
-  double time_score_;
-  double emissions_;
-  double emissions_score_;
+  double overall_score;
+  double price;
+  double price_score;
+  double comfortability;
+  double comfortability_score;
+  double time;
+  double time_score;
+  double emissions;
+  double emissions_score;
 } TripData;
 
 typedef struct CalculateScoreParameters {
