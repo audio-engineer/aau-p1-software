@@ -34,7 +34,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(curl)
 
-add_library(${PROJECT_NAME} api_handler.c application.c calculations.c input.c preferences.c trip.c)
+add_library(${PROJECT_NAME} api_handler.c application.c calculations.c input.c preferences.c trip.c evaluate.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${cjson_SOURCE_DIR})
 
