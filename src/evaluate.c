@@ -117,8 +117,7 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
   for (size_t i = 0; i < size_of_struct_array; i++) {
     trip_arr[i].overall_score =
         (GetUserPreference("price") / 1.0) * trip_arr[i].price_score +
-        (GetUserPreference("health") / 1.0) *
-            trip_arr[i].comfortability_score +
+        (GetUserPreference("health") / 1.0) * trip_arr[i].comfortability_score +
         (GetUserPreference("time") / 1.0) * trip_arr[i].time_score +
         (GetUserPreference("environment") / 1.0) * trip_arr[i].emissions_score;
   }
@@ -129,8 +128,8 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
     printf(
         "Trip %zu: P: %6.2lf H: %6.2lf T: %6.2lf E: %6.2lf --- Ps: %2.2lf Hs: "
         "%2.2lf Ts: %2.2lf Es: %2.2lf --- Os: %2.2lf.\n",
-        i + 1, trip_arr[i].price, trip_arr[i].comfortability,
-        trip_arr[i].time, trip_arr[i].emissions, trip_arr[i].price_score,
+        i + 1, trip_arr[i].price, trip_arr[i].comfortability, trip_arr[i].time,
+        trip_arr[i].emissions, trip_arr[i].price_score,
         trip_arr[i].comfortability_score, trip_arr[i].time_score,
         trip_arr[i].emissions_score, trip_arr[i].overall_score);
   }
