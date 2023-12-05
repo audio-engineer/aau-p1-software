@@ -1,16 +1,18 @@
 #include "evaluate.h"
-#include "preferences.h"
 
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include "preferences.h"
+
 #ifdef __APPLE__
 #include <sys/_types/_size_t.h>
 #endif
 
-// Constants for testing until we have concrete calculations of the attributes of the routes.
+// Constants for testing until we have concrete calculations of the attributes
+// of the routes.
 enum Constants {
   kSizeOfArrayForTesting = 5,
   kArbitrarySizeOfValuesInTest = 500
@@ -36,7 +38,9 @@ void EvaluateTestingFunction() {
   Evaluate(trip_arr, size_of_struct_array);
 }
 
-void CalculateScore(TripData trip_data[], const CalculateScoreParameters* calculate_score_parameters) {
+void CalculateScore(
+    TripData trip_data[],
+    const CalculateScoreParameters* calculate_score_parameters) {
   size_t num_trips = calculate_score_parameters->kNumTrips;
   size_t read_offset = calculate_score_parameters->kReadOffset;
   size_t write_offset = calculate_score_parameters->kWriteOffset;
@@ -89,44 +93,44 @@ void CalculateScore(TripData trip_data[], const CalculateScoreParameters* calcul
 
 void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
   // Calculating score.
-  CalculateScoreParameters price_params = {size_of_struct_array, offsetof(TripData, price_),
+  CalculateScoreParameters price_params = {size_of_struct_array,
+                                           offsetof(TripData, price_),
                                            offsetof(TripData, price_score_), 1};
   CalculateScore(trip_arr, &price_params);
 
-  CalculateScoreParameters comfortability_params = {size_of_struct_array, offsetof(TripData, comfortability_),
-                                             offsetof(TripData, comfortability_score_), 0};
+  CalculateScoreParameters comfortability_params = {
+      size_of_struct_array,offsetof(TripData, comfortability_),
+      offsetof(TripData, comfortability_score_), 0};
   CalculateScore(trip_arr, &comfortability_params);
 
-  CalculateScoreParameters time_params = {size_of_struct_array, offsetof(TripData, time_),
+  CalculateScoreParameters time_params = {size_of_struct_array,
+                                          offsetof(TripData, time_),
                                           offsetof(TripData, time_score_), 1};
   CalculateScore(trip_arr, &time_params);
 
-  CalculateScoreParameters emissions_params = {size_of_struct_array, offsetof(TripData, emissions_),
-                                               offsetof(TripData, emissions_score_), 0};
+  CalculateScoreParameters emissions_params = {
+      size_of_struct_array, offsetof(TripData, emissions_),
+      offsetof(TripData, emissions_score_), 0};
   CalculateScore(trip_arr, &emissions_params);
 
   // Calculate overall_score using all other scores.
   for (size_t i = 0; i < size_of_struct_array; i++) {
     trip_arr[i].overall_score_ =
-        (GetUserPreference("price") / 1.0) *
-            trip_arr[i].price_score_ +
+        (GetUserPreference("price") / 1.0) * trip_arr[i].price_score_ +
         (GetUserPreference("health") / 1.0) *
             trip_arr[i].comfortability_score_ +
-        (GetUserPreference("time") / 1.0) *
-            trip_arr[i].time_score_ +
-        (GetUserPreference("environment") / 1.0) *
-            trip_arr[i].emissions_score_;
+        (GetUserPreference("time") / 1.0) * trip_arr[i].time_score_ +
+        (GetUserPreference("environment") / 1.0) * trip_arr[i].emissions_score_;
   }
 
   // Print of the results.
   printf("\n");
   for (size_t i = 0; i < size_of_struct_array; i++) {
     printf(
-        "Trip %zu: P: %6.2lf H: %6.2lf T: %6.2lf E: %6.2lf --- Ps: %2.2lf Hs: %2.2lf "
-        "Ts: %2.2lf Es: %2.2lf --- Os: %2.2lf.\n",
-        i + 1,
-        trip_arr[i].price_, trip_arr[i].comfortability_, trip_arr[i].time_,
-        trip_arr[i].emissions_, trip_arr[i].price_score_,
+        "Trip %zu: P: %6.2lf H: %6.2lf T: %6.2lf E: %6.2lf --- Ps: %2.2lf Hs: "
+        "%2.2lf Ts: %2.2lf Es: %2.2lf --- Os: %2.2lf.\n",
+        i + 1, trip_arr[i].price_, trip_arr[i].comfortability_,
+        trip_arr[i].time_, trip_arr[i].emissions_, trip_arr[i].price_score_,
         trip_arr[i].comfortability_score_, trip_arr[i].time_score_,
         trip_arr[i].emissions_score_, trip_arr[i].overall_score_);
   }

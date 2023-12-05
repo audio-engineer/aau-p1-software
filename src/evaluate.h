@@ -27,7 +27,8 @@ typedef struct CalculateScoreParameters {
   const int kInverted;
 } CalculateScoreParameters;
 
-void CalculateScore(TripData trip_data[], const CalculateScoreParameters* calculate_score_parameters);
+void CalculateScore(TripData trip_data[],
+                    const CalculateScoreParameters* calculate_score_parameters);
 void Evaluate(TripData trip_arr[], size_t size_of_struct_array);
 void EvaluateTestingFunction();
 #endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
