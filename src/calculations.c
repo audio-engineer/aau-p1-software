@@ -24,8 +24,8 @@ enum CalculationConstants {
   kEarthRadius = 6371000
 };
 
-double const kMillion = 1000000.0;
-double const kRadians = M_PI / 180.0;
+const double kMillion = 1000000.0;
+const double kRadians = M_PI / 180.0;
 
 const int kTrainPriceTable[kTrainPriceTableSize] = {
     0,    390,  390,  540,  720,  900,  1050, 1200, 1350, 1500,
