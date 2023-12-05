@@ -14,7 +14,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(${PROJECT_NAME} calculations.cc string_builder.cc)
+add_executable(${PROJECT_NAME} calculations.cc)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC aau_p1_software_library GTest::gtest_main)
 
