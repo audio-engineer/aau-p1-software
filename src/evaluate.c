@@ -114,9 +114,9 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
   // Calculate overall_score using all other scores.
   for (size_t i = 0; i < size_of_struct_array; i++) {
     trip_arr[i].overall_score =
-        GetUserPreference("price")       * trip_arr[i].price_score +
-        GetUserPreference("health")      * trip_arr[i].comfortability_score +
-        GetUserPreference("time")        * trip_arr[i].time_score +
+        GetUserPreference("price") * trip_arr[i].price_score +
+        GetUserPreference("health") * trip_arr[i].comfortability_score +
+        GetUserPreference("time") * trip_arr[i].time_score +
         GetUserPreference("environment") * trip_arr[i].emissions_score;
   }
 
