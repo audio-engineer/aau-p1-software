@@ -57,8 +57,6 @@ void CalculateScore(
     /* Using pointer arithmetic to navigate to the correct members in each
        instance of the struct. */
     read_member = (void*)((char*)&trip_data[i] + read_offset);
-    // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
-    write_member = (void*)((char*)&trip_data[i] + write_offset);
 
     // Updating largest and smallest attribute value
     if (*(double*)read_member > attribute_largest) {
