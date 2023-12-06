@@ -30,6 +30,8 @@ void InitializePreferenceFile() {
   fputs(kSerializedJsonWithNewline, preferences);
   fclose(preferences);
   free(kSerializedJsonWithNewline);
+
+  cJSON_Delete(kJsonPreferences);
 }
 
 void SetUserPreference(const char* const key, const double value) {
