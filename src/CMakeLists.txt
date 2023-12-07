@@ -38,7 +38,7 @@ add_library(${PROJECT_NAME} api_handler.c application.c calculations.c input.c p
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${cjson_SOURCE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC cjson libcurl)
+target_link_libraries(${PROJECT_NAME} PRIVATE cjson libcurl)
 
 #[[TODO -Werror disabled due to cJSON throwing errors on compilation. We need to disable errors for cJSON until we find
     a better solution.]]
