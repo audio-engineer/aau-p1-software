@@ -2,6 +2,7 @@
 
 #include "curl/curl.h"
 #include "curl/easy.h"
+#include "evaluate.h"
 #include "preferences.h"
 #include "trip.h"
 
@@ -24,6 +25,9 @@ void Run() {
   }
 
   Trip(kCurl);
+
+  // This function runs the evaluate function with simulated data.
+  EvaluateTestingFunction();
 
   curl_easy_cleanup(kCurl);
 
