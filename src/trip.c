@@ -147,34 +147,33 @@ void Trip(CURL* const curl) {
 
   // printf("Trip response body: %s\n", trip_response.body);
 
-  // printf("trip_endpoint: %s\n", trip_endpoint);
+  printf("trip_endpoint: %s\n", trip_endpoint);
 
   const cJSON* const kTripList =
       cJSON_GetObjectItemCaseSensitive(kTripResponseBody, "TripList");
   const cJSON* const kTripArray =
       cJSON_GetObjectItemCaseSensitive(kTripList, "Trip");
 
+  const cJSON* k_trip = NULL;
+  const cJSON* k_leg = NULL;
+
   // Iterate through each trip
-  for (int i = 0; i < cJSON_GetArraySize(kTripArray); i++) {
-    const cJSON* const kTrip = cJSON_GetArrayItem(kTripArray, i);
+  cJSON_ArrayForEach(k_trip, kTripArray) {
     const cJSON* const kLegArray =
-        cJSON_GetObjectItemCaseSensitive(kTrip, "Leg");
+        cJSON_GetObjectItemCaseSensitive(k_trip, "Leg");
 
-    // Iterate through each leg in the trip
-    for (int j = 0; j < cJSON_GetArraySize(kLegArray); j++) {
-      const cJSON* const kLeg = cJSON_GetArrayItem(kLegArray, j);
-
+    if (cJSON_IsObject(kLegArray)) {
       // Accessing different attributes of the leg
       const cJSON* const kOrigin =
-          cJSON_GetObjectItemCaseSensitive(kLeg, "Origin");
+          cJSON_GetObjectItemCaseSensitive(kLegArray, "Origin");
       const cJSON* const kTrainName =
-          cJSON_GetObjectItemCaseSensitive(kLeg, "name");
+          cJSON_GetObjectItemCaseSensitive(kLegArray, "name");
       const cJSON* const kOriginName =
           cJSON_GetObjectItemCaseSensitive(kOrigin, "name");
       const cJSON* const kOriginTime =
           cJSON_GetObjectItemCaseSensitive(kOrigin, "time");
       const cJSON* const kDestination =
-          cJSON_GetObjectItemCaseSensitive(kLeg, "Destination");
+          cJSON_GetObjectItemCaseSensitive(kLegArray, "Destination");
       const cJSON* const kDestinationName =
           cJSON_GetObjectItemCaseSensitive(kDestination, "name");
       const cJSON* const kDestinationTime =
@@ -189,9 +188,8 @@ void Trip(CURL* const curl) {
       printf("Destination time: %s\n", kDestinationTime->valuestring);
 
       // Check if there are more legs in the trip
-      if (j < cJSON_GetArraySize(kLegArray) - 1) {
-        // Access information about switching trains
-        const cJSON* const kNextLeg = cJSON_GetArrayItem(kLegArray, j + 1);
+      cJSON* const kNextLeg = kLegArray->next;
+      if (kNextLeg != NULL) {
         const cJSON* const kNextOrigin =
             cJSON_GetObjectItemCaseSensitive(kNextLeg, "Origin");
         const cJSON* const kNextTrainName =
@@ -207,8 +205,54 @@ void Trip(CURL* const curl) {
                kNextOriginName->valuestring);
       }
     }
-  }
 
+    if (cJSON_IsArray(kLegArray)) {
+      // Iterate through each leg in the trip
+      cJSON_ArrayForEach(k_leg, kLegArray) {
+        // Accessing different attributes of the leg
+        const cJSON* const kOrigin =
+            cJSON_GetObjectItemCaseSensitive(k_leg, "Origin");
+        const cJSON* const kTrainName =
+            cJSON_GetObjectItemCaseSensitive(k_leg, "name");
+        const cJSON* const kOriginName =
+            cJSON_GetObjectItemCaseSensitive(kOrigin, "name");
+        const cJSON* const kOriginTime =
+            cJSON_GetObjectItemCaseSensitive(kOrigin, "time");
+        const cJSON* const kDestination =
+            cJSON_GetObjectItemCaseSensitive(k_leg, "Destination");
+        const cJSON* const kDestinationName =
+            cJSON_GetObjectItemCaseSensitive(kDestination, "name");
+        const cJSON* const kDestinationTime =
+            cJSON_GetObjectItemCaseSensitive(kDestination, "time");
+
+        // Print the details
+        printf("\n");
+        printf("Origin: %s\n", kOriginName->valuestring);
+        printf("Train: %s\n", kTrainName->valuestring);
+        printf("Origin time: %s\n", kOriginTime->valuestring);
+        printf("Destination: %s\n", kDestinationName->valuestring);
+        printf("Destination time: %s\n", kDestinationTime->valuestring);
+
+        // Check if there are more legs in the trip
+        cJSON* const kNextLeg = k_leg->next;
+        if (kNextLeg != NULL) {
+          const cJSON* const kNextOrigin =
+              cJSON_GetObjectItemCaseSensitive(kNextLeg, "Origin");
+          const cJSON* const kNextTrainName =
+              cJSON_GetObjectItemCaseSensitive(kNextLeg, "name");
+          const cJSON* const kNextOriginName =
+              cJSON_GetObjectItemCaseSensitive(kNextOrigin, "name");
+          const cJSON* const kNextOriginTime =
+              cJSON_GetObjectItemCaseSensitive(kNextOrigin, "time");
+
+          // Print information about switching trains
+          printf("Switching to Train: %s at %s from %s\n",
+                 kNextTrainName->valuestring, kNextOriginTime->valuestring,
+                 kNextOriginName->valuestring);
+        }
+      }
+    }
+  }
   cJSON_Delete(kTripResponseBody);
   free(trip_response.body);
 }
