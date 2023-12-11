@@ -27,14 +27,18 @@ void Run() {
 
   Trip(kCurl);
 
-  // This function runs the evaluate function with simulated data.
+  // Initialization of struct arrays.
   TripData trip_data[kSizeOfArrayForTesting] = {0};
-  size_t trip_data_size_elements = sizeof(trip_data) / sizeof(TripData);
   TripScore trip_score[kSizeOfArrayForTesting] = {0};
+  size_t trip_data_size_elements = sizeof(trip_data) / sizeof(TripData);
+
+  // Function to populate data array to be deleted later.
   TESTPopulateTripArray(trip_data, trip_data_size_elements);
 
+  // Reads data from data array and writes data to score array.
   Evaluate(trip_data, trip_score, trip_data_size_elements);
 
+  // Prints data, scores and route details.
   Output(trip_data, trip_score, trip_data_size_elements);
 
   // Sorting test.
