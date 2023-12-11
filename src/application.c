@@ -3,6 +3,7 @@
 #include "curl/curl.h"
 #include "curl/easy.h"
 #include "evaluate.h"
+#include "output.h"
 #include "preferences.h"
 #include "trip.h"
 
@@ -27,7 +28,14 @@ void Run() {
   Trip(kCurl);
 
   // This function runs the evaluate function with simulated data.
-  EvaluateTestingFunction();
+  TripData trip_data[kSizeOfArrayForTesting] = {0};
+  size_t trip_data_size_elements = sizeof(trip_data) / sizeof(TripData);
+  TripScore trip_score[kSizeOfArrayForTesting] = {0};
+  TESTPopulateTripArray(trip_data, trip_data_size_elements);
+
+  Evaluate(trip_data, trip_score, trip_data_size_elements);
+
+  Output(trip_data, trip_score, trip_data_size_elements);
 
   // Sorting test.
   const int kArrSize = 5;
