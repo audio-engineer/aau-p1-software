@@ -3,8 +3,8 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 
 #include "preferences.h"
 
@@ -133,7 +133,6 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
         trip_arr[i].emissions_score, trip_arr[i].overall_score);
   }
 }
-
 int RouteCompareOverall(const void* ptr1, const void* ptr2);
 int RouteComparePrice(const void* ptr1, const void* ptr2);
 int RouteCompareTime(const void* ptr1, const void* ptr2);
@@ -148,7 +147,8 @@ void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array) {
   } else if (!strcmp(attribute, "time")) {
     qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareTime);
   } else if (!strcmp(attribute, "environment")) {
-    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareEnvironment);
+    qsort(trips, size_of_struct_array, sizeof(TripData),
+          RouteCompareEnvironment);
   } else if (!strcmp(attribute, "health")) {
     qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareHealth);
   } else {
@@ -158,7 +158,9 @@ void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array) {
 }
 
 int RouteCompareOverall(const void* ptr1, const void* ptr2) {
-  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  // Should convert double to int down to 0.01 or 1%
+  const double kConvertMultiplier = 100;
+
   TripData trip1 = *(TripData*)ptr1;
   TripData trip2 = *(TripData*)ptr2;
 
@@ -170,7 +172,8 @@ int RouteCompareOverall(const void* ptr1, const void* ptr2) {
 }
 
 int RouteComparePrice(const void* ptr1, const void* ptr2) {
-  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  const double kConvertMultiplier =
+      100;  // Should convert double to int down to 0.01 or 1%
   TripData trip1 = *(TripData*)ptr1;
   TripData trip2 = *(TripData*)ptr2;
 
@@ -181,8 +184,9 @@ int RouteComparePrice(const void* ptr1, const void* ptr2) {
   return attribute_trip2 - attribute_trip1;
 }
 
-int RouteCompareTime (const void* ptr1, const void* ptr2) {
-  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+int RouteCompareTime(const void* ptr1, const void* ptr2) {
+  const double kConvertMultiplier =
+      100;  // Should convert double to int down to 0.01 or 1%
   TripData trip1 = *(TripData*)ptr1;
   TripData trip2 = *(TripData*)ptr2;
 
@@ -194,7 +198,8 @@ int RouteCompareTime (const void* ptr1, const void* ptr2) {
 }
 
 int RouteCompareEnvironment(const void* ptr1, const void* ptr2) {
-  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  const double kConvertMultiplier =
+      100;  // Should convert double to int down to 0.01 or 1%
   TripData trip1 = *(TripData*)ptr1;
   TripData trip2 = *(TripData*)ptr2;
 
@@ -206,7 +211,8 @@ int RouteCompareEnvironment(const void* ptr1, const void* ptr2) {
 }
 
 int RouteCompareHealth(const void* ptr1, const void* ptr2) {
-  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  const double kConvertMultiplier =
+      100;  // Should convert double to int down to 0.01 or 1%
   TripData trip1 = *(TripData*)ptr1;
   TripData trip2 = *(TripData*)ptr2;
 
@@ -218,7 +224,10 @@ int RouteCompareHealth(const void* ptr1, const void* ptr2) {
 }
 
 void InitTrip(TripData* arr, int arr_size) {
-  const double kNum1 = 0.02; const double kNum2 = 0.4; const double kNum3 = 0.33; const double kNum4 = 0.78;
+  const double kNum1 = 0.02;
+  const double kNum2 = 0.4;
+  const double kNum3 = 0.33;
+  const double kNum4 = 0.78;
   const double kNum5 = 0.4;
 
   arr[0].overall_score = kNum1;
