@@ -21,16 +21,16 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
   while (1) {
     char* user_choice = ReadUserInput(
         "View route details (1-XXX), sort the list (P,T,S,C,O) or terminate "
-        "(Q): ");  // TODO: Find a way to replace "XXX"
+        "(Q): ");  // TODO(unknown): Find a way to replace "XXX"
 
     if (IsInteger(user_choice)) {
       long choice = strtol(user_choice, NULL, kBaseTen);
       printf("You entered: %ld\n", choice);
       if (choice > (long)size) {
-        printf("Error");  // TODO: Better error message.
+        printf("Error");  // TODO(unknown): Better error message.
       }
     }
-    // TODO: Print route details.
+    // TODO(unknown): Print route details.
 
     else if (IsCharacter(user_choice)) {
       char choice = user_choice[0];
@@ -49,7 +49,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
         case 'C':
         case 'o':
         case 'O':
-          // TODO: Sort by "choice"
+          // TODO(unknown): Sort by "choice"
           break;
         default:
           printf("%c does not trigger any functionality. Please try again.\n",
@@ -85,9 +85,11 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
 bool IsInteger(const char* str) {
   // Function to test for if integer.
   char* end_pointer = NULL;
-  strtol(str, &end_pointer, 10);
+  strtol(str, &end_pointer, kBaseTen);
+  // NOLINTNEXTLINE(readability-implicit-bool-conversion)
   return (*end_pointer == '\0');
 }
 
-// Function to test for if char.
+// Function to test for if str is char.
+// NOLINTNEXTLINE(readability-implicit-bool-conversion)
 bool IsCharacter(const char* str) { return (strlen(str) == 1); }
