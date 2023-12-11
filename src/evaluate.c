@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "preferences.h"
 
@@ -130,5 +131,110 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
         trip_arr[i].emissions, trip_arr[i].price_score,
         trip_arr[i].comfortability_score, trip_arr[i].time_score,
         trip_arr[i].emissions_score, trip_arr[i].overall_score);
+  }
+}
+
+int RouteCompareOverall(const void* ptr1, const void* ptr2);
+int RouteComparePrice(const void* ptr1, const void* ptr2);
+int RouteCompareTime(const void* ptr1, const void* ptr2);
+int RouteCompareEnvironment(const void* ptr1, const void* ptr2);
+int RouteCompareHealth(const void* ptr1, const void* ptr2);
+
+void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array) {
+  if (!strcmp(attribute, "overall")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareOverall);
+  } else if (!strcmp(attribute, "price")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteComparePrice);
+  } else if (!strcmp(attribute, "time")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareTime);
+  } else if (!strcmp(attribute, "environment")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareEnvironment);
+  } else if (!strcmp(attribute, "health")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareHealth);
+  } else {
+    printf("Error sorting attribute!\n");
+    return;
+  }
+}
+
+int RouteCompareOverall(const void* ptr1, const void* ptr2) {
+  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  TripData trip1 = *(TripData*)ptr1;
+  TripData trip2 = *(TripData*)ptr2;
+
+  // Should be able to compare down to 1% or 0.01
+  int attribute_trip1 = (int)(trip1.overall_score * kConvertMultiplier);
+  int attribute_trip2 = (int)(trip2.overall_score * kConvertMultiplier);
+
+  return attribute_trip2 - attribute_trip1;
+}
+
+int RouteComparePrice(const void* ptr1, const void* ptr2) {
+  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  TripData trip1 = *(TripData*)ptr1;
+  TripData trip2 = *(TripData*)ptr2;
+
+  // Should be able to compare down to 1% or 0.01
+  int attribute_trip1 = (int)(trip1.price_score * kConvertMultiplier);
+  int attribute_trip2 = (int)(trip2.price_score * kConvertMultiplier);
+
+  return attribute_trip2 - attribute_trip1;
+}
+
+int RouteCompareTime (const void* ptr1, const void* ptr2) {
+  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  TripData trip1 = *(TripData*)ptr1;
+  TripData trip2 = *(TripData*)ptr2;
+
+  // Should be able to compare down to 1% or 0.01
+  int attribute_trip1 = (int)(trip1.time_score * kConvertMultiplier);
+  int attribute_trip2 = (int)(trip2.time_score * kConvertMultiplier);
+
+  return attribute_trip2 - attribute_trip1;
+}
+
+int RouteCompareEnvironment(const void* ptr1, const void* ptr2) {
+  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  TripData trip1 = *(TripData*)ptr1;
+  TripData trip2 = *(TripData*)ptr2;
+
+  // Should be able to compare down to 1% or 0.01
+  int attribute_trip1 = (int)(trip1.emissions_score * kConvertMultiplier);
+  int attribute_trip2 = (int)(trip2.emissions_score * kConvertMultiplier);
+
+  return attribute_trip2 - attribute_trip1;
+}
+
+int RouteCompareHealth(const void* ptr1, const void* ptr2) {
+  const double kConvertMultiplier = 100; // Should convert double to int down to 0.01 or 1%
+  TripData trip1 = *(TripData*)ptr1;
+  TripData trip2 = *(TripData*)ptr2;
+
+  // Should be able to compare down to 1% or 0.01
+  int attribute_trip1 = (int)(trip1.comfortability_score * kConvertMultiplier);
+  int attribute_trip2 = (int)(trip2.comfortability_score * kConvertMultiplier);
+
+  return attribute_trip2 - attribute_trip1;
+}
+
+void InitTrip(TripData* arr, int arr_size) {
+  const double kNum1 = 0.02; const double kNum2 = 0.4; const double kNum3 = 0.33; const double kNum4 = 0.78;
+  const double kNum5 = 0.4;
+
+  arr[0].overall_score = kNum1;
+  arr[1].overall_score = kNum2;
+  arr[2].overall_score = kNum3;
+  arr[3].overall_score = kNum4;
+  arr[4].overall_score = kNum5;
+
+  for (int i = 0; i < arr_size; i++) {
+    printf("Trip: %d overall score: %lf\n", i + 1, arr[i].overall_score);
+  }
+  printf("\n");
+}
+
+void PrintSortedTrip(TripData* arr, int arr_size) {
+  for (int i = 0; i < arr_size; i++) {
+    printf("Trip: %d overall score: %lf\n", i + 1, arr[i].overall_score);
   }
 }
