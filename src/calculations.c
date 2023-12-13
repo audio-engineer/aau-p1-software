@@ -154,12 +154,16 @@ char* CalculateTime(
   const ModeOfTransport kModeOfTransport =
       calculate_time_parameters->kModeOfTransport;
   const int kDistance = calculate_time_parameters->kTripDistance;
-  // const char* kDepartureTime = calculate_time_parameters->kDepartureTime;
-  // const char* kArrivalTime = calculate_time_parameters->kArrivalTime;
-  // TODO(Simon): remove comments when calculating
+  const char* k_departure_time = calculate_time_parameters->kDepartureTime;
+  const char* k_arrival_time = calculate_time_parameters->kArrivalTime;
 
   int hrs = 0;
   int mins = 0;
+
+  int hrs_first = 0;
+  int mins_first = 0;
+  int hrs_second = 0;
+  int mins_second = 0;
 
   double car_highway_time = 0;
   double car_city_time = 0;
@@ -168,14 +172,26 @@ char* CalculateTime(
     case kTrain:
     case kSTrain:
     case kBus:
+      // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+      sscanf(k_departure_time, "%d:%d", &hrs_first, &mins_first);
+      sscanf(k_arrival_time, "%d:%d", &hrs_second, &mins_second);
+      // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
-      // TODO(Simon): calculate time difference from two strings
+      hrs = hrs_second - hrs_first;
+      mins = mins_second - mins_first;
+
+      if (mins < 0) {
+        hrs--;
+        mins += kTimeMinutesInHour;
+      }
+      if (hrs < 0) {
+        hrs += kTimeHoursInDay;
+      }
 
       break;
 
     case kCar:
     case kEv:
-
       car_highway_time = (kDistance - kDistanceToHighway) / kCarSpeedHighway;
       car_city_time = kDistanceToHighway / kCarSpeedCity;
 
@@ -186,14 +202,12 @@ char* CalculateTime(
       break;
 
     case kBike:
-
       hrs = (int)(kDistance / kBikeSpeed);
       mins = (int)((kDistance / kBikeSpeed - hrs) * kTimeMinutesInHour);
 
       break;
 
     case kWalk:
-
       hrs = (int)(kDistance / kWalkSpeed);
       mins = (int)((kDistance / kWalkSpeed - hrs) * kTimeMinutesInHour);
 
@@ -277,4 +291,44 @@ char* CalculateSecondTime(const CalculateSecondTimeParameters* const
   // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
 
   return time_copy;
+}
+
+int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
+  const ModeOfTransport kModeOfTransport =
+      calculate_co2_parameters->kModeOfTransport;
+  const int kDistance = calculate_co2_parameters->kTripDistance;
+
+  int co2 = 0;
+
+  switch (kModeOfTransport) {
+    case kTrain:
+      co2 = kCO2Train * kDistance;
+
+      break;
+
+    case kSTrain:
+      co2 = kCO2Strain * kDistance;
+
+      break;
+
+    case kBus:
+      co2 = kCO2Bus * kDistance;
+
+      break;
+
+    case kCar:
+      // make stuff yeet
+    case kEv:
+      // here too woo
+    case kBike:
+    case kWalk:
+      break;
+
+    default:
+      perror("Invalid type");
+
+      return EXIT_FAILURE;
+  }
+
+  return co2;
 }
