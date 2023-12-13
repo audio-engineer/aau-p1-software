@@ -153,12 +153,7 @@ char* CalculateTime(
       calculate_time_parameters->kModeOfTransport;
   const int kDistance = calculate_time_parameters->kTripDistance;
   // const bool kArrival = calculate_time_parameters->kArrival;
-
-  char* time = malloc(kTimeBufferSize * sizeof(char));
-  if (!time) {
-    perror("Failed to allocate memory");
-    return NULL;
-  }
+  // TODO(Kristyian): Implement this :')
 
   int hrs = 0;
   int mins = 0;
@@ -199,9 +194,20 @@ char* CalculateTime(
       return NULL;
   }
 
+  char time[kTimeBufferSize] = {0};
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   sprintf(time, "%02d:%02d", hrs, mins);
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
-  return time;
+  char* time_copy = calloc(strlen(time), sizeof(char));
+  if (!time_copy) {
+    perror("Failed to allocate memory");
+    return NULL;
+  }
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
+  strcpy(time_copy, time);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
+
+  return time_copy;
 }

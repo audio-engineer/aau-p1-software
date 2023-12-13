@@ -36,6 +36,11 @@ typedef struct CalculateTimeDifferenceParameters {
   const char* kArrivalTime;
 } CalculateTimeDifferenceParameters;
 
+typedef struct CalculateCo2Parameters {
+  const ModeOfTransport kModeOfTransport;
+  const int kTripDistance;
+} CalculateCo2Parameters;
+
 double CalculateDistance(
     const CalculateDistanceParameters* calculate_distance_parameters);
 
@@ -43,10 +48,11 @@ int CalculatePrice(const CalculatePriceParameters* calculate_price_parameters);
 
 char* CalculateTime(const CalculateTimeParameters* calculate_time_parameters);
 
-char* CalcualteTimeDifference();
+char* CalcualteTimeDifference(const CalculateTimeDifferenceParameters*
+                                  calcualte_time_difference_parameters);
 
-int CalculateCo2();
+int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters);
 
-// int CalculateComfort(); TODO Optional: Add comfort as an attribute
+// int CalculateComfort(); TODO(Optional): Add comfort as an attribute
 
 #endif  // AAU_P1_SOFTWARE_SRC_CALCULATIONS_H_
