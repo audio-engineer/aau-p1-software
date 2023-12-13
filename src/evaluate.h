@@ -5,20 +5,31 @@
 #include <sys/_types/_size_t.h>
 #endif
 
+// Constants for testing until we have concrete calculations of the attributes
+// of the routes.
+enum ArbitrarySizes {
+  kSizeOfArrayForTesting = 5,
+  kArbitrarySizeOfValuesInTest = 500
+};
+
 /* Struct initialized for testing. May look different when final form is
    decided. */
 typedef struct TripData {
-  // int trip_id_;
-  double overall_score;
+  int trip_id;
   double price;
-  double price_score;
   double comfortability;
-  double comfortability_score;
   double time;
-  double time_score;
   double emissions;
-  double emissions_score;
 } TripData;
+
+typedef struct TripScore {
+  int trip_id;
+  double overall_score;
+  double price_score;
+  double comfortability_score;
+  double time_score;
+  double emissions_score;
+} TripScore;
 
 typedef struct CalculateScoreParameters {
   const size_t kNumTrips;
@@ -27,13 +38,12 @@ typedef struct CalculateScoreParameters {
   const int kInverted;
 } CalculateScoreParameters;
 
-void CalculateScore(TripData trip_data[],
+void CalculateScore(TripData trip_data[], TripScore trip_score[],
                     const CalculateScoreParameters* calculate_score_parameters);
-void Evaluate(TripData trip_arr[], size_t size_of_struct_array);
-void EvaluateTestingFunction();
+void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr);
+void TESTPopulateTripArray(TripData arr[], size_t size);
 
 void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array);
 void InitTrip(TripData* arr, int arr_size);
 void PrintSortedTrip(TripData* arr, int arr_size);
-
 #endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
