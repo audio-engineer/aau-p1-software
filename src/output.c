@@ -91,7 +91,8 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
 
     // Printing trip data and scores.
     printf(
-        "Priority %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf H: %6.2lf --- Ps: "
+        "Priority %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf H: %6.2lf --- "
+        "Ps: "
         "%2.2lf Ts: "
         "%2.2lf Es: %2.2lf Hs: %2.2lf --- Os: %2.2lf.\n",
         i + 1, score_arr[i].trip_id, data_arr[trip_index].price,
