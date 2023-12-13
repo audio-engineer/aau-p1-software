@@ -5,6 +5,7 @@
 #include "evaluate.h"
 #include "output.h"
 #include "preferences.h"
+#include "sort.h"
 #include "trip.h"
 
 void Run() {
@@ -38,15 +39,11 @@ void Run() {
   // Reads data from data array and writes data to score array.
   Evaluate(trip_data, trip_score, trip_data_size_elements);
 
-  // Prints data, scores and route details.
-  Output(trip_data, trip_score, trip_data_size_elements);
+  // Initial sort for "overall score".
+  SortRoutes(trip_score, "overall", trip_data_size_elements);
 
-  // Sorting test.
-  const int kArrSize = 5;
-  TripData testing_trips[kArrSize];
-  InitTrip(testing_trips, kArrSize);
-  SortRoutes(testing_trips, "overall", kArrSize);
-  PrintSortedTrip(testing_trips, kArrSize);
+  // Iterates over user input.
+  Output(trip_data, trip_score, trip_data_size_elements);
 
   curl_easy_cleanup(kCurl);
 
