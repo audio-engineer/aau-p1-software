@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum CalculationConstants {
   kAverageZoneSize = 6,
@@ -21,11 +22,25 @@ enum CalculationConstants {
 
   kDaysInWorkMonth = 20,
 
-  kEarthRadius = 6371000
+  kEarthRadius = 6371000,
+
+  kTimeBufferSize = 6,
+  kTimeMinutesInHour = 60,
+
+  kCarSpeedCity = 35,
+  kCarSpeedHighway = 120,
+
+  kCO2Strain = 14,
+  kCO2Train = 33,
+  kCO2Bus = 10
 };
 
 const double kMillion = 1000000.0;
 const double kRadians = M_PI / 180.0;
+
+const double kDistanceToHighway = 17.5;
+const double kWalkSpeed = 4.6;
+const double kBikeSpeed = 17.5;
 
 const int kTrainPriceTable[kTrainPriceTableSize] = {
     0,    390,  390,  540,  720,  900,  1050, 1200, 1350, 1500,
@@ -80,6 +95,8 @@ int CalculatePrice(
 
   switch (kModeOfTransport) {
     case kTrain:
+    case kSTrain:
+    case kBus:
       zones = kDistance / kAverageZoneSize;
 
       if (zones > kTrainPriceTableSize - 1) {
@@ -128,4 +145,63 @@ int CalculatePrice(
   }
 
   return price;
+}
+
+char* CalculateTime(
+    const CalculateTimeParameters* const calculate_time_parameters) {
+  const ModeOfTransport kModeOfTransport =
+      calculate_time_parameters->kModeOfTransport;
+  const int kDistance = calculate_time_parameters->kTripDistance;
+  // const bool kArrival = calculate_time_parameters->kArrival;
+
+  char* time = malloc(kTimeBufferSize * sizeof(char));
+  if (!time) {
+    perror("Failed to allocate memory");
+    return NULL;
+  }
+
+  int hrs = 0;
+  int mins = 0;
+
+  double car_highway_time = 0;
+  double car_city_time = 0;
+
+  switch (kModeOfTransport) {
+    case kCar:
+    case kEv:
+
+      car_highway_time = (kDistance - kDistanceToHighway) / kCarSpeedHighway;
+      car_city_time = kDistanceToHighway / kCarSpeedCity;
+
+      hrs = (int)(car_highway_time + car_city_time);
+      mins =
+          (int)((car_highway_time + car_city_time - hrs) * kTimeMinutesInHour);
+
+      break;
+
+    case kBike:
+
+      hrs = (int)(kDistance / kBikeSpeed);
+      mins = (int)((kDistance / kBikeSpeed - hrs) * kTimeMinutesInHour);
+
+      break;
+
+    case kWalk:
+
+      hrs = (int)(kDistance / kWalkSpeed);
+      mins = (int)((kDistance / kWalkSpeed - hrs) * kTimeMinutesInHour);
+
+      break;
+
+    default:
+      perror("Invalid type");
+
+      return NULL;
+  }
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sprintf(time, "%02d:%02d", hrs, mins);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+  return time;
 }

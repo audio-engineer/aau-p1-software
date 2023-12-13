@@ -53,3 +53,8 @@ TEST(CalculatePriceTest, Walk40kmAdult0) {
   const CalculatePriceParameters kParameters = {kWalk, 40, false, 0};
   EXPECT_EQ(0, CalculatePrice(&kParameters));
 }
+
+TEST(CalculateTimeTest, Car200km) {
+  const CalculateTimeParameters kParameters = {kCar, 230, false};
+  EXPECT_STREQ("02:16", CalculateTime(&kParameters));
+}
