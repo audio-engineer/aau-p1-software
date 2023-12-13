@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 enum CalculationConstants {
   kAverageZoneSize = 6,
@@ -26,6 +27,7 @@ enum CalculationConstants {
 
   kTimeBufferSize = 6,
   kTimeMinutesInHour = 60,
+  kTimeHoursInDay = 24,
 
   kCarSpeedCity = 35,
   kCarSpeedHighway = 120,
@@ -152,8 +154,9 @@ char* CalculateTime(
   const ModeOfTransport kModeOfTransport =
       calculate_time_parameters->kModeOfTransport;
   const int kDistance = calculate_time_parameters->kTripDistance;
-  // const bool kArrival = calculate_time_parameters->kArrival;
-  // TODO(Kristyian): Implement this :')
+  // const char* kDepartureTime = calculate_time_parameters->kDepartureTime;
+  // const char* kArrivalTime = calculate_time_parameters->kArrivalTime;
+  // TODO(Simon): remove comments when calculating
 
   int hrs = 0;
   int mins = 0;
@@ -162,6 +165,14 @@ char* CalculateTime(
   double car_city_time = 0;
 
   switch (kModeOfTransport) {
+    case kTrain:
+    case kSTrain:
+    case kBus:
+
+      // TODO(Simon): calculate time difference from two strings
+
+      break;
+
     case kCar:
     case kEv:
 
@@ -198,13 +209,69 @@ char* CalculateTime(
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   sprintf(time, "%02d:%02d", hrs, mins);
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-
   char* time_copy = calloc(strlen(time), sizeof(char));
   if (!time_copy) {
     perror("Failed to allocate memory");
     return NULL;
   }
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
+  strcpy(time_copy, time);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
 
+  return time_copy;
+}
+
+char* CalculateSecondTime(const CalculateSecondTimeParameters* const
+                              calculate_second_time_parameters) {
+  const char* k_time = calculate_second_time_parameters->kTime;
+  const char* k_time_difference =
+      calculate_second_time_parameters->kTimeDifference;
+  const bool kArrival = calculate_second_time_parameters->kArrival;
+
+  int hrs_first = 0;
+  int mins_first = 0;
+  int hrs_second = 0;
+  int mins_second = 0;
+  int hrs_difference = 0;
+  int mins_difference = 0;
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sscanf(k_time, "%d:%d", &hrs_first, &mins_first);
+  sscanf(k_time_difference, "%d:%d", &hrs_difference, &mins_difference);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+  if (!kArrival) {
+    hrs_second = hrs_first + hrs_difference;
+    mins_second = mins_first + mins_difference;
+  } else {
+    hrs_second = hrs_first - hrs_difference;
+    mins_second = mins_first - mins_difference;
+  }
+
+  if (mins_second >= kTimeMinutesInHour) {
+    hrs_second++;
+    mins_second -= kTimeMinutesInHour;
+  }
+  if (hrs_second >= kTimeHoursInDay) {
+    hrs_second -= kTimeHoursInDay;
+  }
+  if (mins_second < 0) {
+    hrs_second--;
+    mins_second += kTimeMinutesInHour;
+  }
+  if (hrs_second < 0) {
+    hrs_second += kTimeHoursInDay;
+  }
+
+  char time[kTimeBufferSize] = {0};
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sprintf(time, "%02d:%02d", hrs_second, mins_second);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  char* time_copy = calloc(strlen(time), sizeof(char));
+  if (!time_copy) {
+    perror("Failed to allocate memory");
+    return NULL;
+  }
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
   strcpy(time_copy, time);
   // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)

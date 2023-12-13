@@ -28,13 +28,15 @@ typedef struct CalculatePriceParameters {
 typedef struct CalculateTimeParameters {
   const ModeOfTransport kModeOfTransport;
   const int kTripDistance;
-  const bool kArrival;
-} CalculateTimeParameters;
-
-typedef struct CalculateTimeDifferenceParameters {
   const char* kDepartureTime;
   const char* kArrivalTime;
-} CalculateTimeDifferenceParameters;
+} CalculateTimeParameters;
+
+typedef struct CalculateSecondTimeParameters {
+  const char* kTime;
+  const char* kTimeDifference;
+  const bool kArrival;
+} CalculateSecondTimeParameters;
 
 typedef struct CalculateCo2Parameters {
   const ModeOfTransport kModeOfTransport;
@@ -48,8 +50,8 @@ int CalculatePrice(const CalculatePriceParameters* calculate_price_parameters);
 
 char* CalculateTime(const CalculateTimeParameters* calculate_time_parameters);
 
-char* CalcualteTimeDifference(const CalculateTimeDifferenceParameters*
-                                  calcualte_time_difference_parameters);
+char* CalculateSecondTime(
+    const CalculateSecondTimeParameters* calculate_second_time_parameter);
 
 int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters);
 

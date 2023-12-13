@@ -4,6 +4,8 @@ extern "C" {
 
 #include <gtest/gtest.h>
 
+// NOLINTBEGIN
+
 TEST(CalculatePriceTest, Train30kmAdult0) {
   const CalculatePriceParameters kParameters = {kTrain, 30, false, 0};
   EXPECT_EQ(900, CalculatePrice(&kParameters));
@@ -55,6 +57,28 @@ TEST(CalculatePriceTest, Walk40kmAdult0) {
 }
 
 TEST(CalculateTimeTest, Car200km) {
-  const CalculateTimeParameters kParameters = {kCar, 230, false};
+  const CalculateTimeParameters kParameters = {kCar, 230, "NULL", "NULL"};
   EXPECT_STREQ("02:16", CalculateTime(&kParameters));
 }
+
+TEST(CalculateSecondTimeTest, 1323plus0105) {
+  const CalculateSecondTimeParameters kParameters = {"13:23", "01:05", false};
+  EXPECT_STREQ("14:28", CalculateSecondTime(&kParameters));
+}
+
+TEST(CalculateSecondTimeTest, 1323minus0105) {
+  const CalculateSecondTimeParameters kParameters = {"13:23", "01:05", true};
+  EXPECT_STREQ("12:18", CalculateSecondTime(&kParameters));
+}
+
+TEST(CalculateSecondTimeTest, 2345plus0232) {
+  const CalculateSecondTimeParameters kParameters = {"23:45", "2:32", false};
+  EXPECT_STREQ("02:17", CalculateSecondTime(&kParameters));
+}
+
+TEST(CalculateSecondTimeTest, 0116minus0253) {
+  const CalculateSecondTimeParameters kParameters = {"01:16", "02:53", true};
+  EXPECT_STREQ("22:23", CalculateSecondTime(&kParameters));
+}
+
+// NOLINTEND
