@@ -29,6 +29,13 @@ void Run() {
   // This function runs the evaluate function with simulated data.
   EvaluateTestingFunction();
 
+  // Sorting test.
+  const int kArrSize = 5;
+  TripData testing_trips[kArrSize];
+  InitTrip(testing_trips, kArrSize);
+  SortRoutes(testing_trips, "overall", kArrSize);
+  PrintSortedTrip(testing_trips, kArrSize);
+
   curl_easy_cleanup(kCurl);
 
   curl_global_cleanup();

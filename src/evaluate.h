@@ -31,4 +31,9 @@ void CalculateScore(TripData trip_data[],
                     const CalculateScoreParameters* calculate_score_parameters);
 void Evaluate(TripData trip_arr[], size_t size_of_struct_array);
 void EvaluateTestingFunction();
+
+void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array);
+void InitTrip(TripData* arr, int arr_size);
+void PrintSortedTrip(TripData* arr, int arr_size);
+
 #endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
