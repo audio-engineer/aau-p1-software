@@ -133,29 +133,6 @@ void Evaluate(TripData trip_arr[], size_t size_of_struct_array) {
         trip_arr[i].emissions_score, trip_arr[i].overall_score);
   }
 }
-int RouteCompareOverall(const void* ptr1, const void* ptr2);
-int RouteComparePrice(const void* ptr1, const void* ptr2);
-int RouteCompareTime(const void* ptr1, const void* ptr2);
-int RouteCompareEnvironment(const void* ptr1, const void* ptr2);
-int RouteCompareHealth(const void* ptr1, const void* ptr2);
-
-void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array) {
-  if (!strcmp(attribute, "overall")) {
-    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareOverall);
-  } else if (!strcmp(attribute, "price")) {
-    qsort(trips, size_of_struct_array, sizeof(TripData), RouteComparePrice);
-  } else if (!strcmp(attribute, "time")) {
-    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareTime);
-  } else if (!strcmp(attribute, "environment")) {
-    qsort(trips, size_of_struct_array, sizeof(TripData),
-          RouteCompareEnvironment);
-  } else if (!strcmp(attribute, "health")) {
-    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareHealth);
-  } else {
-    printf("Error sorting attribute!\n");
-    return;
-  }
-}
 
 int RouteCompareOverall(const void* ptr1, const void* ptr2) {
   // Should convert double to int down to 0.01 or 1%
@@ -245,5 +222,23 @@ void InitTrip(TripData* arr, int arr_size) {
 void PrintSortedTrip(TripData* arr, int arr_size) {
   for (int i = 0; i < arr_size; i++) {
     printf("Trip: %d overall score: %lf\n", i + 1, arr[i].overall_score);
+  }
+}
+
+void SortRoutes(TripData* trips, char* attribute, size_t size_of_struct_array) {
+  if (!strcmp(attribute, "overall")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareOverall);
+  } else if (!strcmp(attribute, "price")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteComparePrice);
+  } else if (!strcmp(attribute, "time")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareTime);
+  } else if (!strcmp(attribute, "environment")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData),
+          RouteCompareEnvironment);
+  } else if (!strcmp(attribute, "health")) {
+    qsort(trips, size_of_struct_array, sizeof(TripData), RouteCompareHealth);
+  } else {
+    printf("Error sorting attribute!\n");
+    return;
   }
 }
