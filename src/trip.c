@@ -23,9 +23,11 @@ char* GetLocationId(CURL* const curl, const char* const location) {
   char* const kEncodedLocation =
       curl_easy_escape(curl, location, (int)strlen(location));
 
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(endpoint, "location?input=", strlen("location?input="));
   strncat(endpoint, kEncodedLocation, strlen(kEncodedLocation));
   strncat(endpoint, "&format=json", strlen("&format=json"));
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   curl_free(kEncodedLocation);
 
@@ -53,6 +55,7 @@ char* GetLocationId(CURL* const curl, const char* const location) {
 
   char* const kNearestLocationIdCopy =
       calloc(strlen(kNearestLocationId), sizeof(char));
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.strcpy)
   strcpy(kNearestLocationIdCopy, kNearestLocationId);
 
   cJSON_Delete(kStartLocationResponseBody);
@@ -72,12 +75,14 @@ cJSON* GetTrip(CURL* const curl, const char* const origin_location_id,
                const char* const destination_location_id) {
   char endpoint[kBufferSize] = {0};
 
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(endpoint, "trip?originId=", strlen("trip?originId="));
   strncat(endpoint, origin_location_id, strlen(origin_location_id));
   strncat(endpoint, "&destId=", strlen("&destId="));
   strncat(endpoint, destination_location_id, strlen(destination_location_id));
   strncat(endpoint, "&format=json", strlen("&format=json"));
   strncat(endpoint, "&useBus=0", strlen("&useBus=0"));
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   Response response = {NULL, 0};
 
