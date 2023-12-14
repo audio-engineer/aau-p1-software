@@ -8,172 +8,118 @@
 #include "api_handler.h"
 #include "cJSON.h"
 #include "globals.h"
-#include "input.h"
 
-void Trip(CURL* const curl) {
-  const cJSON* location_list = NULL;
-  const cJSON* stop_location = NULL;
-  Response location_response = {NULL, 0};
+/**
+ * @brief Makes an API call to Rejseplanen to get the location ID of the nearest
+ * matching location.
+ *
+ * @param curl
+ * @param location
+ * @return Location ID as a heap-allocated string.
+ */
+char* GetLocationId(CURL* const curl, const char* const location) {
+  char endpoint[kBufferSize] = {0};
 
-  char* const kStartLocationInput = ReadUserInput("Enter a start location:");
-  char* const kStopLocationInput = ReadUserInput("Enter a stop location:");
-  char location_endpoint[kBufferSize] = "";
+  char* const kEncodedLocation =
+      curl_easy_escape(curl, location, (int)strlen(location));
 
-  char* start_encoded_input = curl_easy_escape(
-      curl, kStartLocationInput, (int)strlen(kStartLocationInput));
+  strncat(endpoint, "location?input=", strlen("location?input="));
+  strncat(endpoint, kEncodedLocation, strlen(kEncodedLocation));
+  strncat(endpoint, "&format=json", strlen("&format=json"));
 
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  strncat(location_endpoint, "location?input=", strlen("location?input="));
-  strncat(location_endpoint, start_encoded_input, strlen(start_encoded_input));
-  strncat(location_endpoint, "&format=json", strlen("&format=json"));
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  curl_free(kEncodedLocation);
 
-  curl_free(start_encoded_input);
-  DoRequest(curl, location_endpoint, &location_response);
-  cJSON* const kStartLocationResponseBody = cJSON_Parse(location_response.body);
+  Response response = {NULL, 0};
 
-  location_list = cJSON_GetObjectItemCaseSensitive(kStartLocationResponseBody,
-                                                   "LocationList");
+  DoRequest(curl, endpoint, &response);
 
-  stop_location =
-      cJSON_GetObjectItemCaseSensitive(location_list, "StopLocation");
+  cJSON* const kStartLocationResponseBody = cJSON_Parse(response.body);
+  free(response.body);
 
-  printf("\n");
-  const cJSON* firstlocation = cJSON_GetArrayItem(stop_location, 0);
-  long start_id = -1;
+  const cJSON* const kLocationList = cJSON_GetObjectItemCaseSensitive(
+      kStartLocationResponseBody, "LocationList");
 
-  if (firstlocation != NULL) {
-    const cJSON* const kName =
-        cJSON_GetObjectItemCaseSensitive(firstlocation, "name");
-    const cJSON* const kXCoordinate =
-        cJSON_GetObjectItemCaseSensitive(firstlocation, "x");
-    const cJSON* const kYCoordinate =
-        cJSON_GetObjectItemCaseSensitive(firstlocation, "y");
-    const cJSON* const kLocationId =
-        cJSON_GetObjectItemCaseSensitive(firstlocation, "id");
+  const cJSON* const kStopLocation =
+      cJSON_GetObjectItemCaseSensitive(kLocationList, "StopLocation");
 
-    printf("%s %s %s %s\n", kName->valuestring, kXCoordinate->valuestring,
-           kYCoordinate->valuestring, kLocationId->valuestring);
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    start_id = strtol(kLocationId->valuestring, NULL, 10);
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  const cJSON* const kNearestLocation = cJSON_GetArrayItem(kStopLocation, 0);
+
+  if (!kNearestLocation) {
+    return 0;
   }
 
-  free(kStartLocationInput);
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  memset(location_endpoint, 0, sizeof(location_endpoint));
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  const char* const kNearestLocationId =
+      cJSON_GetObjectItemCaseSensitive(kNearestLocation, "id")->valuestring;
+
+  char* const kNearestLocationIdCopy =
+      calloc(strlen(kNearestLocationId), sizeof(char));
+  strcpy(kNearestLocationIdCopy, kNearestLocationId);
 
   cJSON_Delete(kStartLocationResponseBody);
 
-  char* stop_encoded_input = curl_easy_escape(curl, kStopLocationInput,
-                                              (int)strlen(kStopLocationInput));
+  return kNearestLocationIdCopy;
+}
 
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  strncat(location_endpoint, "location?input=", strlen("location?input="));
-  strncat(location_endpoint, stop_encoded_input, strlen(stop_encoded_input));
-  strncat(location_endpoint, "&format=json", strlen("&format=json"));
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+/**
+ * @brief Makes an API call to Rejseplanen to get the full trip data.
+ *
+ * @param curl
+ * @param origin_location_id
+ * @param destination_location_id
+ * @return Pointer to heap-allocated cJSON struct. Delete it with cJSON_Delete.
+ */
+cJSON* GetTrip(CURL* const curl, const char* const origin_location_id,
+               const char* const destination_location_id) {
+  char endpoint[kBufferSize] = {0};
 
-  // Allocated in ReadUserInput
-  free(kStopLocationInput);
-  curl_free(stop_encoded_input);
+  strncat(endpoint, "trip?originId=", strlen("trip?originId="));
+  strncat(endpoint, origin_location_id, strlen(origin_location_id));
+  strncat(endpoint, "&destId=", strlen("&destId="));
+  strncat(endpoint, destination_location_id, strlen(destination_location_id));
+  strncat(endpoint, "&format=json", strlen("&format=json"));
+  strncat(endpoint, "&useBus=0", strlen("&useBus=0"));
 
-  Response location_response_second = {NULL, 0};
-  DoRequest(curl, location_endpoint, &location_response_second);
-  cJSON* const kStopLocationResponseBody =
-      cJSON_Parse(location_response_second.body);
+  Response response = {NULL, 0};
 
-  location_list = cJSON_GetObjectItemCaseSensitive(kStopLocationResponseBody,
-                                                   "LocationList");
+  DoRequest(curl, endpoint, &response);
 
-  stop_location =
-      cJSON_GetObjectItemCaseSensitive(location_list, "StopLocation");
-
-  const cJSON* secondlocation = cJSON_GetArrayItem(stop_location, 0);
-  long dest_id = -1;
-
-  if (secondlocation != NULL) {
-    const cJSON* const kNameSecond =
-        cJSON_GetObjectItemCaseSensitive(secondlocation, "name");
-    const cJSON* const kXCoordinateSecond =
-        cJSON_GetObjectItemCaseSensitive(secondlocation, "x");
-    const cJSON* const kYCoordinateSecond =
-        cJSON_GetObjectItemCaseSensitive(secondlocation, "y");
-    const cJSON* const kLocationIdSecond =
-        cJSON_GetObjectItemCaseSensitive(secondlocation, "id");
-
-    printf("%s %s %s %s\n", kNameSecond->valuestring,
-           kXCoordinateSecond->valuestring, kYCoordinateSecond->valuestring,
-           kLocationIdSecond->valuestring);
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    dest_id = strtol(kLocationIdSecond->valuestring, NULL, 10);
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  }
-
-  location_response_second = (Response){NULL, 0};
-
-  cJSON_Delete(kStopLocationResponseBody);
-
-  printf("CALCULATING TRIP\n");
-
-  Response trip_response = {NULL, 0};
-  char trip_endpoint[kBufferSize] = "";
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  char start_id_str[20];
-  char dest_id_str[20];
-  // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-
-  snprintf(start_id_str, sizeof(start_id), "%ld", start_id);
-  snprintf(dest_id_str, sizeof(dest_id), "%ld", dest_id);
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  char* encoded_start_id =
-      curl_easy_escape(curl, start_id_str, (int)strlen(start_id_str));
-  char* encoded_dest_id =
-      curl_easy_escape(curl, dest_id_str, (int)strlen(dest_id_str));
-
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  strncat(trip_endpoint, "trip?originId=", strlen("trip?originId="));
-  strncat(trip_endpoint, encoded_start_id, strlen(encoded_start_id));
-  strncat(trip_endpoint, "&destId=", strlen("&destId="));
-  strncat(trip_endpoint, encoded_dest_id, strlen(encoded_dest_id));
-  strncat(trip_endpoint, "&format=json", strlen("&format=json"));
-  strncat(trip_endpoint, "&useBus=0", strlen("&useBus=0"));
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-
-  DoRequest(curl, trip_endpoint, &trip_response);
-  cJSON* const kTripResponseBody = cJSON_Parse(trip_response.body);
-
-  // printf("Trip response body: %s\n", trip_response.body);
-
-  printf("trip_endpoint: %s\n", trip_endpoint);
+  cJSON* const kTripResponseBody = cJSON_Parse(response.body);
+  free(response.body);
 
   const cJSON* const kTripList =
       cJSON_GetObjectItemCaseSensitive(kTripResponseBody, "TripList");
-  const cJSON* const kTripArray =
-      cJSON_GetObjectItemCaseSensitive(kTripList, "Trip");
 
-  const cJSON* k_trip = NULL;
-  const cJSON* k_leg = NULL;
+  return cJSON_GetObjectItemCaseSensitive(kTripList, "Trip");
+}
+
+void GetTripData(CURL* const curl, const char* const origin,
+                 const char* const destination) {
+  char* const kOriginLocationId = GetLocationId(curl, origin);
+  char* const kDestinationLocationId = GetLocationId(curl, destination);
+
+  cJSON* trip = GetTrip(curl, kOriginLocationId, kDestinationLocationId);
+
+  free(kOriginLocationId);
+  free(kDestinationLocationId);
 
   // Iterate through each trip
-  cJSON_ArrayForEach(k_trip, kTripArray) {
-    const cJSON* const kLegArray =
-        cJSON_GetObjectItemCaseSensitive(k_trip, "Leg");
+  const cJSON* leg = NULL;
 
-    if (cJSON_IsObject(kLegArray)) {
+  cJSON_ArrayForEach(leg, trip) {
+    const cJSON* const kLeg = cJSON_GetObjectItemCaseSensitive(leg, "Leg");
+
+    if (cJSON_IsObject(kLeg)) {
       // Accessing different attributes of the leg
       const cJSON* const kOrigin =
-          cJSON_GetObjectItemCaseSensitive(kLegArray, "Origin");
+          cJSON_GetObjectItemCaseSensitive(kLeg, "Origin");
       const cJSON* const kTrainName =
-          cJSON_GetObjectItemCaseSensitive(kLegArray, "name");
+          cJSON_GetObjectItemCaseSensitive(kLeg, "name");
       const cJSON* const kOriginName =
           cJSON_GetObjectItemCaseSensitive(kOrigin, "name");
       const cJSON* const kOriginTime =
           cJSON_GetObjectItemCaseSensitive(kOrigin, "time");
       const cJSON* const kDestination =
-          cJSON_GetObjectItemCaseSensitive(kLegArray, "Destination");
+          cJSON_GetObjectItemCaseSensitive(kLeg, "Destination");
       const cJSON* const kDestinationName =
           cJSON_GetObjectItemCaseSensitive(kDestination, "name");
       const cJSON* const kDestinationTime =
@@ -188,7 +134,7 @@ void Trip(CURL* const curl) {
       printf("Destination time: %s\n", kDestinationTime->valuestring);
 
       // Check if there are more legs in the trip
-      cJSON* const kNextLeg = kLegArray->next;
+      cJSON* const kNextLeg = kLeg->next;
       if (kNextLeg != NULL) {
         const cJSON* const kNextOrigin =
             cJSON_GetObjectItemCaseSensitive(kNextLeg, "Origin");
@@ -206,9 +152,11 @@ void Trip(CURL* const curl) {
       }
     }
 
-    if (cJSON_IsArray(kLegArray)) {
+    if (cJSON_IsArray(kLeg)) {
       // Iterate through each leg in the trip
-      cJSON_ArrayForEach(k_leg, kLegArray) {
+      const cJSON* k_leg = NULL;
+
+      cJSON_ArrayForEach(k_leg, kLeg) {
         // Accessing different attributes of the leg
         const cJSON* const kOrigin =
             cJSON_GetObjectItemCaseSensitive(k_leg, "Origin");
@@ -253,6 +201,6 @@ void Trip(CURL* const curl) {
       }
     }
   }
-  cJSON_Delete(kTripResponseBody);
-  free(trip_response.body);
+
+  cJSON_Delete(trip);
 }

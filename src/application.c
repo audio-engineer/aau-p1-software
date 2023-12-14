@@ -1,18 +1,19 @@
 #include "application.h"
 
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "curl/curl.h"
 #include "curl/easy.h"
 #include "evaluate.h"
+#include "input.h"
 #include "output.h"
 #include "preferences.h"
 #include "sort.h"
 #include "trip.h"
 
 void Run() {
-  /**
-   * preferences.json test
-   */
-  // How to change the user preferences in the preferences file.
   // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   SetUserPreference("price", 0.10);
   SetUserPreference("time", 0.20);
@@ -23,10 +24,21 @@ void Run() {
   CURL* const kCurl = curl_easy_init();
 
   if (!kCurl) {
-    return;
+    perror("cURL could not be initialized");
+
+    exit(EXIT_FAILURE);
   }
 
-  Trip(kCurl);
+  char* const kStartLocationInput = ReadUserInput("Enter a start location:");
+  char* const kStopLocationInput = ReadUserInput("Enter a stop location:");
+
+  printf("\n");
+
+  printf("GETTING TRIP DATA...\n");
+  GetTripData(kCurl, kStartLocationInput, kStopLocationInput);
+
+  free(kStartLocationInput);
+  free(kStopLocationInput);
 
   // Initialization of struct arrays.
   TripData trip_data[kSizeOfArrayForTesting] = {0};
