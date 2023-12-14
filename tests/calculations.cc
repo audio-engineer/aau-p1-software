@@ -61,6 +61,31 @@ TEST(CalculateTimeTest, Car200km) {
   EXPECT_STREQ("02:16", CalculateTime(&kParameters));
 }
 
+TEST(CalculateTimeTest, Ev354km) {
+  const CalculateTimeParameters kParameters = {kEv, 354, "NULL", "NULL"};
+  EXPECT_STREQ("03:18", CalculateTime(&kParameters));
+}
+
+TEST(CalculateTimeTest, Bike40km) {
+  const CalculateTimeParameters kParameters = {kBike, 40, "NULL", "NULL"};
+  EXPECT_STREQ("02:17", CalculateTime(&kParameters));
+}
+
+TEST(CalculateTimeTest, Walk20km) {
+  const CalculateTimeParameters kParameters = {kWalk, 20, "NULL", "NULL"};
+  EXPECT_STREQ("04:20", CalculateTime(&kParameters));
+}
+
+TEST(CalculateTimeTest, Train1020to1343) {
+  const CalculateTimeParameters kParameters = {kTrain, 0, "10:20", "13:43"};
+  EXPECT_STREQ("03:23", CalculateTime(&kParameters));
+}
+
+TEST(CalculateTimeTest, Bus2346to0013) {
+  const CalculateTimeParameters kParameters = {kBus, 0, "23:46", "00:13"};
+  EXPECT_STREQ("00:27", CalculateTime(&kParameters));
+}
+
 TEST(CalculateSecondTimeTest, 1323plus0105) {
   const CalculateSecondTimeParameters kParameters = {"13:23", "01:05", false};
   EXPECT_STREQ("14:28", CalculateSecondTime(&kParameters));
@@ -79,6 +104,31 @@ TEST(CalculateSecondTimeTest, 2345plus0232) {
 TEST(CalculateSecondTimeTest, 0116minus0253) {
   const CalculateSecondTimeParameters kParameters = {"01:16", "02:53", true};
   EXPECT_STREQ("22:23", CalculateSecondTime(&kParameters));
+}
+
+TEST(CalculateCo2Test, train200km) {
+  const CalculateCo2Parameters kParameters = {kTrain, 200, 0};
+  EXPECT_EQ(264, CalculateCo2(&kParameters));
+}
+
+TEST(CalculateCo2Test, strain50km) {
+  const CalculateCo2Parameters kParameters = {kSTrain, 50, 0};
+  EXPECT_EQ(28, CalculateCo2(&kParameters));
+}
+
+TEST(CalculateCo2Test, car200km15) {
+  const CalculateCo2Parameters kParameters = {kCar, 200, 15};
+  EXPECT_EQ(1429, CalculateCo2(&kParameters));
+}
+
+TEST(CalculateCo2Test, car200km0) {
+  const CalculateCo2Parameters kParameters = {kCar, 200, 0};
+  EXPECT_EQ(2144, CalculateCo2(&kParameters));
+}
+
+TEST(CalculateCo2Test, ev10000km) {
+  const CalculateCo2Parameters kParameters = {kEv, 10000, 0};
+  EXPECT_EQ(0, CalculateCo2(&kParameters));
 }
 
 // NOLINTEND
