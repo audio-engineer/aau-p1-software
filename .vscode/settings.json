@@ -5,6 +5,7 @@
   "files.associations": {
     "*.c": "c",
     "*.h": "c",
-    "*.cc": "cpp"
+    "*.cc": "cpp",
+    "*.tcc": "c"
   }
 }

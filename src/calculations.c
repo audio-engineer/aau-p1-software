@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 enum CalculationConstants {
   kAverageZoneSize = 6,
@@ -21,11 +23,29 @@ enum CalculationConstants {
 
   kDaysInWorkMonth = 20,
 
-  kEarthRadius = 6371000
+  kEarthRadius = 6371000,
+
+  kTimeBufferSize = 6,
+  kTimeMinutesInHour = 60,
+  kTimeHoursInDay = 24,
+
+  kCarSpeedCity = 35,
+  kCarSpeedHighway = 120,
+
+  kCO2STrain = 14,
+  kCO2Train = 33,
+  kCO2Bus = 10,
+  kCO2Car = 2680,
+
+  kGramsinKg = 1000
 };
 
 const double kMillion = 1000000.0;
 const double kRadians = M_PI / 180.0;
+
+const double kDistanceToHighway = 17.5;
+const double kWalkSpeed = 4.6;
+const double kBikeSpeed = 17.5;
 
 const int kTrainPriceTable[kTrainPriceTableSize] = {
     0,    390,  390,  540,  720,  900,  1050, 1200, 1350, 1500,
@@ -80,6 +100,8 @@ int CalculatePrice(
 
   switch (kModeOfTransport) {
     case kTrain:
+    case kSTrain:
+    case kBus:
       zones = kDistance / kAverageZoneSize;
 
       if (zones > kTrainPriceTableSize - 1) {
@@ -128,4 +150,195 @@ int CalculatePrice(
   }
 
   return price;
+}
+
+char* CalculateTime(
+    const CalculateTimeParameters* const calculate_time_parameters) {
+  const ModeOfTransport kModeOfTransport =
+      calculate_time_parameters->kModeOfTransport;
+  const int kDistance = calculate_time_parameters->kTripDistance;
+  const char* departure_time = calculate_time_parameters->departure_time;
+  const char* arrival_time = calculate_time_parameters->arrival_time;
+
+  int hrs = 0;
+  int mins = 0;
+
+  int hrs_first = 0;
+  int mins_first = 0;
+  int hrs_second = 0;
+  int mins_second = 0;
+
+  double car_highway_time = 0;
+  double car_city_time = 0;
+
+  switch (kModeOfTransport) {
+    case kTrain:
+    case kSTrain:
+    case kBus:
+      // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+      sscanf(departure_time, "%d:%d", &hrs_first, &mins_first);
+      sscanf(arrival_time, "%d:%d", &hrs_second, &mins_second);
+      // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+      hrs = hrs_second - hrs_first;
+      mins = mins_second - mins_first;
+
+      if (mins < 0) {
+        hrs--;
+        mins += kTimeMinutesInHour;
+      }
+      if (hrs < 0) {
+        hrs += kTimeHoursInDay;
+      }
+
+      break;
+
+    case kCar:
+    case kEv:
+      car_highway_time = (kDistance - kDistanceToHighway) / kCarSpeedHighway;
+      car_city_time = kDistanceToHighway / kCarSpeedCity;
+
+      hrs = (int)(car_highway_time + car_city_time);
+      mins =
+          (int)((car_highway_time + car_city_time - hrs) * kTimeMinutesInHour);
+
+      break;
+
+    case kBike:
+      hrs = (int)(kDistance / kBikeSpeed);
+      mins = (int)((kDistance / kBikeSpeed - hrs) * kTimeMinutesInHour);
+
+      break;
+
+    case kWalk:
+      hrs = (int)(kDistance / kWalkSpeed);
+      mins = (int)((kDistance / kWalkSpeed - hrs) * kTimeMinutesInHour);
+
+      break;
+
+    default:
+      perror("Invalid type");
+
+      return NULL;
+  }
+
+  char time_new[kTimeBufferSize] = {0};
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sprintf(time_new, "%02d:%02d", hrs, mins);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  char* time_copy = calloc(strlen(time_new), sizeof(char));
+  if (!time_copy) {
+    perror("Failed to allocate memory");
+    return NULL;
+  }
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
+  strcpy(time_copy, time_new);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
+
+  return time_copy;
+}
+
+char* CalculateSecondTime(const CalculateSecondTimeParameters* const
+                              calculate_second_time_parameters) {
+  const char* time = calculate_second_time_parameters->time;
+  const char* time_difference =
+      calculate_second_time_parameters->time_difference;
+  const bool kArrival = calculate_second_time_parameters->kArrival;
+
+  int hrs_first = 0;
+  int mins_first = 0;
+  int hrs_second = 0;
+  int mins_second = 0;
+  int hrs_difference = 0;
+  int mins_difference = 0;
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sscanf(time, "%d:%d", &hrs_first, &mins_first);
+  sscanf(time_difference, "%d:%d", &hrs_difference, &mins_difference);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+  if (!kArrival) {
+    hrs_second = hrs_first + hrs_difference;
+    mins_second = mins_first + mins_difference;
+  } else {
+    hrs_second = hrs_first - hrs_difference;
+    mins_second = mins_first - mins_difference;
+  }
+
+  if (mins_second >= kTimeMinutesInHour) {
+    hrs_second++;
+    mins_second -= kTimeMinutesInHour;
+  }
+  if (hrs_second >= kTimeHoursInDay) {
+    hrs_second -= kTimeHoursInDay;
+  }
+  if (mins_second < 0) {
+    hrs_second--;
+    mins_second += kTimeMinutesInHour;
+  }
+  if (hrs_second < 0) {
+    hrs_second += kTimeHoursInDay;
+  }
+
+  char time_new[kTimeBufferSize] = {0};
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sprintf(time_new, "%02d:%02d", hrs_second, mins_second);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  char* time_copy = calloc(strlen(time_new), sizeof(char));
+  if (!time_copy) {
+    perror("Failed to allocate memory");
+    return NULL;
+  }
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
+  strcpy(time_copy, time_new);
+  // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
+
+  return time_copy;
+}
+
+int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
+  const ModeOfTransport kModeOfTransport =
+      calculate_co2_parameters->kModeOfTransport;
+  const int kDistance = calculate_co2_parameters->kTripDistance;
+  int fuel_efficiency = calculate_co2_parameters->kFuelEfficiency;
+
+  double co2 = 0;
+
+  switch (kModeOfTransport) {
+    case kTrain:
+      co2 = kCO2Train * kDistance;
+
+      break;
+
+    case kSTrain:
+      co2 = kCO2STrain * kDistance;
+
+      break;
+
+    case kBus:
+      co2 = kCO2Bus * kDistance;
+
+      break;
+
+    case kCar:
+      if (!fuel_efficiency) {
+        fuel_efficiency = kAverageFuelEfficiency;
+      }
+      co2 = ((double)kDistance / fuel_efficiency) * kCO2Car;
+
+      break;
+
+    case kEv:
+    case kBike:
+    case kWalk:
+      break;
+
+    default:
+      perror("Invalid type");
+
+      return EXIT_FAILURE;
+  }
+
+  co2 = (co2 / kGramsinKg) * kDaysInWorkMonth * 2;
+  return (int)co2;
 }
