@@ -8,7 +8,7 @@
 // Constants for testing until we have concrete calculations of the attributes
 // of the routes.
 enum ArbitrarySizes {
-  kSizeOfArrayForTesting = 5,
+  kSizeOfArrayForTesting = 10,
   kArbitrarySizeOfValuesInTest = 500
 };
 

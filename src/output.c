@@ -16,7 +16,7 @@
 // Function outputs data about the trips.
 void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
   // Initial print of the trip data and score data.
-  PrintTripScoresAndData(data_arr, score_arr);
+  PrintTripScoresAndData(data_arr, score_arr, size);
 
   // Iterating until termination.
   while (1) {
@@ -65,7 +65,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
                  choice);
           break;
       }
-      PrintTripScoresAndData(data_arr, score_arr);
+      PrintTripScoresAndData(data_arr, score_arr, size);
     } else {
       // If it is neither an integer nor a character, treat it as an error.
       printf("Error: Invalid input. You entered: %s\n", user_choice);
@@ -73,16 +73,31 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
   }
 }
 
-void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[]) {
-  // Function printing trip data and scores.
+void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
+                            size_t size) {
   printf("\n");
+
+  // Variable to track the index of the trip_id in the data_arr.
+  size_t trip_index = 0;
+
+  // Iterating over amount of trips to be shown.
   for (size_t i = 0; i < kAmountRoutesToPrint; i++) {
+    // For loop to identify the index of the relevant struct in the data_arr.
+    for (trip_index = 0; trip_index < size; trip_index++) {
+      if (score_arr[i].trip_id == data_arr[trip_index].trip_id) {
+        break;
+      }
+    }
+
+    // Printing trip data and scores.
     printf(
-        "Trip %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf H: %6.2lf --- Ps: "
+        "Priority %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf H: %6.2lf --- "
+        "Ps: "
         "%2.2lf Ts: "
         "%2.2lf Es: %2.2lf Hs: %2.2lf --- Os: %2.2lf.\n",
-        i + 1, score_arr[i].trip_id, data_arr[i].price, data_arr[i].time,
-        data_arr[i].environment, data_arr[i].health, score_arr[i].price_score,
+        i + 1, score_arr[i].trip_id, data_arr[trip_index].price,
+        data_arr[trip_index].time, data_arr[trip_index].environment,
+        data_arr[trip_index].health, score_arr[i].price_score,
         score_arr[i].time_score, score_arr[i].environment_score,
         score_arr[i].health_score, score_arr[i].overall_score);
   }

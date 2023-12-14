@@ -18,6 +18,7 @@ void TESTPopulateTripArray(TripData arr[], size_t size) {
   // Populating the struct array.
   for (size_t i = 0; i < size; i++) {
     // NOLINTBEGIN(concurrency-mt-unsafe)
+    arr[i].trip_id = (int)i + 1;
     arr[i].price = (double)(rand() % kArbitrarySizeOfValuesInTest);
     arr[i].health = (double)(rand() % kArbitrarySizeOfValuesInTest);
     arr[i].time = (double)(rand() % kArbitrarySizeOfValuesInTest);
@@ -99,6 +100,7 @@ void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr) {
 
   // Calculate overall_score using all other scores.
   for (size_t i = 0; i < size_arr; i++) {
+    score_arr[i].trip_id = data_arr[i].trip_id;
     score_arr[i].overall_score =
         GetUserPreference("price") * score_arr[i].price_score +
         GetUserPreference("health") * score_arr[i].health_score +
