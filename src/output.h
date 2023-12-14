@@ -6,7 +6,7 @@
 
 #include "evaluate.h"
 
-enum Constants { kBaseTen = 10, kAmountRoutesToPrint = 5 };
+enum OutputConstants { kBaseTen = 10, kAmountRoutesToPrint = 5 };
 
 void Output(TripData data_arr[], TripScore score_arr[], size_t size);
 void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
