@@ -157,8 +157,8 @@ char* CalculateTime(
   const ModeOfTransport kModeOfTransport =
       calculate_time_parameters->kModeOfTransport;
   const int kDistance = calculate_time_parameters->kTripDistance;
-  const char* k_departure_time = calculate_time_parameters->kDepartureTime;
-  const char* k_arrival_time = calculate_time_parameters->kArrivalTime;
+  const char* departure_time = calculate_time_parameters->departure_time;
+  const char* arrival_time = calculate_time_parameters->arrival_time;
 
   int hrs = 0;
   int mins = 0;
@@ -176,8 +176,8 @@ char* CalculateTime(
     case kSTrain:
     case kBus:
       // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-      sscanf(k_departure_time, "%d:%d", &hrs_first, &mins_first);
-      sscanf(k_arrival_time, "%d:%d", &hrs_second, &mins_second);
+      sscanf(departure_time, "%d:%d", &hrs_first, &mins_first);
+      sscanf(arrival_time, "%d:%d", &hrs_second, &mins_second);
       // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
       hrs = hrs_second - hrs_first;
@@ -222,17 +222,17 @@ char* CalculateTime(
       return NULL;
   }
 
-  char time[kTimeBufferSize] = {0};
+  char time_new[kTimeBufferSize] = {0};
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  sprintf(time, "%02d:%02d", hrs, mins);
+  sprintf(time_new, "%02d:%02d", hrs, mins);
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  char* time_copy = calloc(strlen(time), sizeof(char));
+  char* time_copy = calloc(strlen(time_new), sizeof(char));
   if (!time_copy) {
     perror("Failed to allocate memory");
     return NULL;
   }
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
-  strcpy(time_copy, time);
+  strcpy(time_copy, time_new);
   // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
 
   return time_copy;
@@ -240,9 +240,9 @@ char* CalculateTime(
 
 char* CalculateSecondTime(const CalculateSecondTimeParameters* const
                               calculate_second_time_parameters) {
-  const char* k_time = calculate_second_time_parameters->kTime;
-  const char* k_time_difference =
-      calculate_second_time_parameters->kTimeDifference;
+  const char* time = calculate_second_time_parameters->time;
+  const char* time_difference =
+      calculate_second_time_parameters->time_difference;
   const bool kArrival = calculate_second_time_parameters->kArrival;
 
   int hrs_first = 0;
@@ -253,8 +253,8 @@ char* CalculateSecondTime(const CalculateSecondTimeParameters* const
   int mins_difference = 0;
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  sscanf(k_time, "%d:%d", &hrs_first, &mins_first);
-  sscanf(k_time_difference, "%d:%d", &hrs_difference, &mins_difference);
+  sscanf(time, "%d:%d", &hrs_first, &mins_first);
+  sscanf(time_difference, "%d:%d", &hrs_difference, &mins_difference);
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
   if (!kArrival) {
@@ -280,17 +280,17 @@ char* CalculateSecondTime(const CalculateSecondTimeParameters* const
     hrs_second += kTimeHoursInDay;
   }
 
-  char time[kTimeBufferSize] = {0};
+  char time_new[kTimeBufferSize] = {0};
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  sprintf(time, "%02d:%02d", hrs_second, mins_second);
+  sprintf(time_new, "%02d:%02d", hrs_second, mins_second);
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  char* time_copy = calloc(strlen(time), sizeof(char));
+  char* time_copy = calloc(strlen(time_new), sizeof(char));
   if (!time_copy) {
     perror("Failed to allocate memory");
     return NULL;
   }
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
-  strcpy(time_copy, time);
+  strcpy(time_copy, time_new);
   // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
 
   return time_copy;

@@ -28,13 +28,13 @@ typedef struct CalculatePriceParameters {
 typedef struct CalculateTimeParameters {
   const ModeOfTransport kModeOfTransport;
   const int kTripDistance;
-  const char* kDepartureTime;
-  const char* kArrivalTime;
+  const char* departure_time;
+  const char* arrival_time;
 } CalculateTimeParameters;
 
 typedef struct CalculateSecondTimeParameters {
-  const char* kTime;
-  const char* kTimeDifference;
+  const char* time;
+  const char* time_difference;
   const bool kArrival;
 } CalculateSecondTimeParameters;
 
