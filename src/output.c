@@ -9,10 +9,6 @@
 #include "input.h"
 #include "sort.h"
 
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
-
 // Function outputs data about the trips.
 void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
   // Initial print of the trip data and score data.
@@ -22,13 +18,16 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
   while (1) {
     char* user_choice = ReadUserInput(
         "View route details (1-5), sort the list (P,T,E,H,O) or terminate "
-        "(Q): ");  // TODO(unknown): Find a way to replace "XXX"
+        "(Q): ");
 
     if (IsInteger(user_choice)) {
       long choice = strtol(user_choice, NULL, kBaseTen);
       printf("You entered: %ld\n", choice);
-      if (choice > (long)size) {
-        printf("Error");  // TODO(unknown): Better error message.
+      if (choice > kMaxAmountRoutesToPrint) {
+        printf(
+            "Error: You entered a number that was too large. Please try "
+            "again.\n");
+        continue;
       }
     }
     // TODO(unknown): Print route details.
@@ -63,7 +62,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
         default:
           printf("%c does not trigger any functionality. Please try again.\n",
                  choice);
-          break;
+          continue;
       }
       PrintTripScoresAndData(data_arr, score_arr, size);
     } else {
@@ -80,8 +79,12 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
   // Variable to track the index of the trip_id in the data_arr.
   size_t trip_index = 0;
 
+  // Variable to make sure no empty lines are printed.
+  size_t amount_routes_to_print =
+      size < kMaxAmountRoutesToPrint ? size : kMaxAmountRoutesToPrint;
+
   // Iterating over amount of trips to be shown.
-  for (size_t i = 0; i < kAmountRoutesToPrint; i++) {
+  for (size_t i = 0; i < amount_routes_to_print; i++) {
     // For loop to identify the index of the relevant struct in the data_arr.
     for (trip_index = 0; trip_index < size; trip_index++) {
       if (score_arr[i].trip_id == data_arr[trip_index].trip_id) {

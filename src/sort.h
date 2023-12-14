@@ -1,8 +1,6 @@
 #ifndef AAU_P1_SOFTWARE_SRC_SORT_H_
 #define AAU_P1_SOFTWARE_SRC_SORT_H_
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
+
 #include <output.h>
 #include <stddef.h>
 

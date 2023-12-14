@@ -4,10 +4,6 @@
 
 #include "evaluate.h"
 
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
-
 int RouteCompareOverall(const void* ptr1, const void* ptr2) {
   // Should convert double to int down to 0.01 or 1%
   const double kConvertMultiplier = 100;
