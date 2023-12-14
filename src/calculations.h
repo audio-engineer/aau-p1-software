@@ -41,6 +41,7 @@ typedef struct CalculateSecondTimeParameters {
 typedef struct CalculateCo2Parameters {
   const ModeOfTransport kModeOfTransport;
   const int kTripDistance;
+  const int kFuelEfficiency;
 } CalculateCo2Parameters;
 
 double CalculateDistance(

@@ -34,7 +34,10 @@ enum CalculationConstants {
 
   kCO2Strain = 14,
   kCO2Train = 33,
-  kCO2Bus = 10
+  kCO2Bus = 10,
+  kCO2Car = 2680,
+
+  kGramsinKg = 1000
 };
 
 const double kMillion = 1000000.0;
@@ -297,6 +300,7 @@ int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
   const ModeOfTransport kModeOfTransport =
       calculate_co2_parameters->kModeOfTransport;
   const int kDistance = calculate_co2_parameters->kTripDistance;
+  int fuel_efficiency = calculate_co2_parameters->kFuelEfficiency;
 
   int co2 = 0;
 
@@ -317,9 +321,14 @@ int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
       break;
 
     case kCar:
-      // make stuff yeet
+      if (!fuel_efficiency) {
+        fuel_efficiency = kAverageFuelEfficiency;
+      }
+      co2 = (kDistance / fuel_efficiency) * kCO2Car;
+
+      break;
+
     case kEv:
-      // here too woo
     case kBike:
     case kWalk:
       break;
@@ -330,5 +339,6 @@ int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
       return EXIT_FAILURE;
   }
 
+  co2 = co2 / kGramsinKg * kDaysInWorkMonth * 2;
   return co2;
 }
