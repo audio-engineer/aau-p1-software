@@ -1,9 +1,7 @@
 #ifndef AAU_P1_SOFTWARE_SRC_EVALUATE_H_
 #define AAU_P1_SOFTWARE_SRC_EVALUATE_H_
+
 #include <stddef.h>
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
 
 // Constants for testing until we have concrete calculations of the attributes
 // of the routes.
@@ -40,7 +38,15 @@ typedef struct CalculateScoreParameters {
 
 void CalculateScore(TripData trip_data[], TripScore trip_score[],
                     const CalculateScoreParameters* calculate_score_parameters);
+
 void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr);
-void TESTPopulateTripArray(TripData arr[],
-                           size_t size);  // TODO(unknown): To be removed.
-#endif                                    // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
+
+/**
+ * TODO To be removed
+ *
+ * @param arr
+ * @param size
+ */
+void TESTPopulateTripArray(TripData arr[], size_t size);
+
+#endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
