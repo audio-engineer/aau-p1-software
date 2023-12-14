@@ -16,7 +16,7 @@ enable_testing()
 
 add_executable(${PROJECT_NAME} calculations.cc)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC aau_p1_software_library GTest::gtest_main)
+target_link_libraries(${PROJECT_NAME} PRIVATE aau_p1_software_library GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME})
