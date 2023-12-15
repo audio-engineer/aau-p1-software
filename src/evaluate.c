@@ -66,7 +66,12 @@ void CalculateScore(
 
     // If big is bad, like price, the score is inverted.
     if (inverted) {
-      score = 1 - score;
+      score = 1.0 - score;
+    }
+
+    // Check to minimize floating number funk.
+    if (score > 1.0) {
+      score = 1.0;
     }
 
     // Relevant score member is updated.
