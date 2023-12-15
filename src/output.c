@@ -11,14 +11,15 @@
 
 // Function outputs data about the trips.
 void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
-  // Initial print of the trip data and score data.
+  // Initial sort and print of the trip data and score data.
+  SortRoutes(score_arr, "overall", size);
   PrintTripScoresAndData(data_arr, score_arr, size);
 
   // Iterating until termination.
   while (1) {
     char* user_choice = ReadUserInput(
-        "View route details (1-5), sort the list (P,T,E,H,O) or terminate "
-        "(Q): ");
+        "View route details (1-5), sort the list (Price (P),Time (T), "
+        "Environment (E), Overall (O)) or terminate (Q): ");
 
     if (IsInteger(user_choice)) {
       long choice = strtol(user_choice, NULL, kBaseTen);
@@ -50,10 +51,6 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
         case 'e':
         case 'E':
           SortRoutes(score_arr, "environment", size);
-          break;
-        case 'h':
-        case 'H':
-          SortRoutes(score_arr, "health", size);
           break;
         case 'o':
         case 'O':
@@ -94,15 +91,12 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
 
     // Printing trip data and scores.
     printf(
-        "Priority %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf H: %6.2lf --- "
-        "Ps: "
-        "%2.2lf Ts: "
-        "%2.2lf Es: %2.2lf Hs: %2.2lf --- Os: %2.2lf.\n",
+        "Priority %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf --- Ps: %2.2lf "
+        "Ts: %2.2lf Es: %2.2lf --- Os: %2.2lf.\n",
         i + 1, score_arr[i].trip_id, data_arr[trip_index].price,
         data_arr[trip_index].time, data_arr[trip_index].environment,
-        data_arr[trip_index].health, score_arr[i].price_score,
-        score_arr[i].time_score, score_arr[i].environment_score,
-        score_arr[i].health_score, score_arr[i].overall_score);
+        score_arr[i].price_score, score_arr[i].time_score,
+        score_arr[i].environment_score, score_arr[i].overall_score);
   }
   printf("\n");
 }
