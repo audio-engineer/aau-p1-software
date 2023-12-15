@@ -6,10 +6,6 @@
 
 #include "preferences.h"
 
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
-
 /* This function is included as initial testing code to populate the struct
    array. */
 void TESTPopulateTripArray(TripData arr[], size_t size) {

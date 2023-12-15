@@ -1,18 +1,16 @@
 #include "api_handler.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
 
 #include "curl/curl.h"
 #include "curl/easy.h"
 #include "globals.h"
 
 size_t SaveResponse(const char* const data, const size_t size,
-                    const size_t nmemb, Response* const response) {
-  const size_t kResponseSize = size * nmemb;
+                    const size_t number_of_elements, Response* const response) {
+  const size_t kResponseSize = size * number_of_elements;
 
   char* const kBody =
       realloc(response->body, response->size + kResponseSize + 1);

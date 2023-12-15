@@ -1,11 +1,9 @@
 #include "input.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
 
 #include "globals.h"
 
