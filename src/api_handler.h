@@ -1,11 +1,7 @@
 #ifndef AAU_P1_SOFTWARE_SRC_API_HANDLER_H_
 #define AAU_P1_SOFTWARE_SRC_API_HANDLER_H_
 
-#ifdef __linux__
-#include <stdlib.h>
-#elifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
+#include <stddef.h>
 
 #include "curl/curl.h"
 
