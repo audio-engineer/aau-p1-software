@@ -13,13 +13,20 @@ void TESTPopulateTripArray(TripData arr[], size_t size) {
 
   // Populating the struct array.
   for (size_t i = 0; i < size; i++) {
-    // NOLINTBEGIN(concurrency-mt-unsafe)
     arr[i].trip_id = (int)i + 1;
+#ifdef __linux__
+    // NOLINTBEGIN(concurrency-mt-unsafe)
     arr[i].price = (double)(rand() % kArbitrarySizeOfValuesInTest);
     arr[i].health = (double)(rand() % kArbitrarySizeOfValuesInTest);
     arr[i].time = (double)(rand() % kArbitrarySizeOfValuesInTest);
     arr[i].environment = (double)(rand() % kArbitrarySizeOfValuesInTest);
     // NOLINTEND(concurrency-mt-unsafe)
+#elifdef __APPLE__
+    arr[i].price = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
+    arr[i].health = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
+    arr[i].time = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
+    arr[i].environment = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
+#endif
   }
 }
 

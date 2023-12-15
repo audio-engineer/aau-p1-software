@@ -9,8 +9,6 @@
 #include "evaluate.h"
 #include "input.h"
 #include "output.h"
-#include "preferences.h"
-#include "sort.h"
 #include "trip.h"
 
 void Run() {
