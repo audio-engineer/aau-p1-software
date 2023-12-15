@@ -10,12 +10,12 @@
 #include "globals.h"
 
 /**
- * @brief Makes an API call to Rejseplanen to get the location ID of the nearest
- * matching location.
+ * @brief Makes a call to the Rejseplanen API to get the location ID of the
+ * nearest matching location.
  *
- * @param curl
- * @param location
- * @return Location ID as a heap-allocated string.
+ * @param curl A CURL instance.
+ * @param location The name of the location to be searched for.
+ * @return The location ID as a heap-allocated string.
  */
 char* GetLocationId(CURL* const curl, const char* const location) {
   char endpoint[kBufferSize] = {0};
@@ -64,15 +64,16 @@ char* GetLocationId(CURL* const curl, const char* const location) {
 }
 
 /**
- * @brief Makes an API call to Rejseplanen to get the full trip data.
+ * @brief Makes a call to the Rejseplanen API to get the array of possible
+ * trips.
  *
- * @param curl
- * @param origin_location_id
- * @param destination_location_id
- * @return Pointer to heap-allocated cJSON struct. Delete it with cJSON_Delete.
+ * @param curl A CURL instance.
+ * @param origin_location_id The location ID of the origin location.
+ * @param destination_location_id The location ID of the destination location.
+ * @return Pointer to heap-allocated cJSON struct.
  */
-cJSON* GetTrip(CURL* const curl, const char* const origin_location_id,
-               const char* const destination_location_id) {
+cJSON* GetTripArray(CURL* const curl, const char* const origin_location_id,
+                    const char* const destination_location_id) {
   char endpoint[kBufferSize] = {0};
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
@@ -97,115 +98,189 @@ cJSON* GetTrip(CURL* const curl, const char* const origin_location_id,
   return cJSON_GetObjectItemCaseSensitive(kTripList, "Trip");
 }
 
-void GetTripData(CURL* const curl, const char* const origin,
-                 const char* const destination) {
+/**
+ * @brief Builds a Location struct using the data extracted from the JSON object
+ * found at the "Location" key in a "leg" JSON object.
+ *
+ * @param location The "Location" JSON object.
+ * @return A Location struct.
+ */
+Location BuildLocationStruct(const cJSON* const location) {
+  const cJSON* const kName = cJSON_GetObjectItemCaseSensitive(location, "name");
+  const cJSON* const kType = cJSON_GetObjectItemCaseSensitive(location, "type");
+  const cJSON* const kRouteIDx =
+      cJSON_GetObjectItemCaseSensitive(location, "routeIdx");
+  const cJSON* const kTime = cJSON_GetObjectItemCaseSensitive(location, "time");
+  const cJSON* const kDate = cJSON_GetObjectItemCaseSensitive(location, "date");
+  const cJSON* const kTrack =
+      cJSON_GetObjectItemCaseSensitive(location, "track");
+  const cJSON* const kRtTime =
+      cJSON_GetObjectItemCaseSensitive(location, "rtTime");
+  const cJSON* const kRtDate =
+      cJSON_GetObjectItemCaseSensitive(location, "rtDate");
+  const cJSON* const kRtTrack =
+      cJSON_GetObjectItemCaseSensitive(location, "rtTrack");
+
+  return (Location){kName->valuestring,
+                    kType->valuestring,
+                    kRouteIDx ? kRouteIDx->valuestring : "",
+                    kTime ? kTime->valuestring : "",
+                    kDate ? kDate->valuestring : "",
+                    kTrack ? kTrack->valuestring : "",
+                    kRtTime ? kRtTime->valuestring : "",
+                    kRtDate ? kRtDate->valuestring : "",
+                    kRtTrack ? kRtTrack->valuestring : ""};
+}
+
+/**
+ * @brief Builds a Leg struct using the data extracted from the JSON object
+ * found either as the value at the "Leg" key, or one of the array elements at
+ * the "Leg" key.
+ *
+ * @param leg The "Leg" JSON object.
+ * @return A Leg struct.
+ */
+Leg* BuildLegStruct(const cJSON* const leg) {
+  const cJSON* const kOrigin = cJSON_GetObjectItemCaseSensitive(leg, "Origin");
+  Location origin = BuildLocationStruct(kOrigin);
+
+  const cJSON* const kDestination =
+      cJSON_GetObjectItemCaseSensitive(leg, "Destination");
+  Location destination = BuildLocationStruct(kDestination);
+
+  const cJSON* const kNotes = cJSON_GetObjectItemCaseSensitive(leg, "Notes");
+  const cJSON* const kNotesText =
+      cJSON_GetObjectItemCaseSensitive(kNotes, "text");
+  Notes notes = {kNotesText ? kNotesText->valuestring : ""};
+
+  const cJSON* const kJourneyDetailRef =
+      cJSON_GetObjectItemCaseSensitive(leg, "JourneyDetailRef");
+  JourneyDetailRef journey_detail_ref = {
+      cJSON_GetObjectItemCaseSensitive(kJourneyDetailRef, "ref")->valuestring};
+
+  Leg* leg_struct = calloc(1, sizeof(Leg));
+  leg_struct->name = cJSON_GetObjectItemCaseSensitive(leg, "name")->valuestring;
+  leg_struct->type = cJSON_GetObjectItemCaseSensitive(leg, "type")->valuestring;
+  leg_struct->origin = calloc(1, sizeof(Location));
+  leg_struct->destination = calloc(1, sizeof(Location));
+  leg_struct->notes = calloc(1, sizeof(Notes));
+  leg_struct->journey_detail_ref = calloc(1, sizeof(JourneyDetailRef));
+
+  if (!leg_struct->origin || !leg_struct->destination || !leg_struct->notes ||
+      !leg_struct->journey_detail_ref) {
+    perror("Could not allocate Leg struct members");
+
+    exit(EXIT_FAILURE);
+  }
+
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  memcpy(leg_struct->origin, &origin, sizeof(Location));
+  memcpy(leg_struct->destination, &destination, sizeof(Location));
+  memcpy(leg_struct->notes, &notes, sizeof(Notes));
+  memcpy(leg_struct->journey_detail_ref, &journey_detail_ref,
+         sizeof(JourneyDetailRef));
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+  return leg_struct;
+}
+
+Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
   char* const kOriginLocationId = GetLocationId(curl, origin);
   char* const kDestinationLocationId = GetLocationId(curl, destination);
 
-  cJSON* trip = GetTrip(curl, kOriginLocationId, kDestinationLocationId);
+  Trips* trips = calloc(1, sizeof(Trips));
+
+  if (!trips) {
+    free(kOriginLocationId);
+    free(kDestinationLocationId);
+
+    perror("Could not allocate Trips struct");
+
+    return NULL;
+  }
+
+  cJSON* const kTrips =
+      GetTripArray(curl, kOriginLocationId, kDestinationLocationId);
+
+  trips->origin_location_id = atoi(kOriginLocationId);
+  trips->destination_location_id = atoi(kDestinationLocationId);
 
   free(kOriginLocationId);
   free(kDestinationLocationId);
 
-  // Iterate through each trip
-  const cJSON* leg = NULL;
+  trips->trips = calloc((size_t)cJSON_GetArraySize(kTrips), sizeof(Trip));
 
-  cJSON_ArrayForEach(leg, trip) {
-    const cJSON* const kLeg = cJSON_GetObjectItemCaseSensitive(leg, "Leg");
+  if (!trips->trips) {
+    free(trips);
 
-    if (cJSON_IsObject(kLeg)) {
-      // Accessing different attributes of the leg
-      const cJSON* const kOrigin =
-          cJSON_GetObjectItemCaseSensitive(kLeg, "Origin");
-      const cJSON* const kTrainName =
-          cJSON_GetObjectItemCaseSensitive(kLeg, "name");
-      const cJSON* const kOriginName =
-          cJSON_GetObjectItemCaseSensitive(kOrigin, "name");
-      const cJSON* const kOriginTime =
-          cJSON_GetObjectItemCaseSensitive(kOrigin, "time");
-      const cJSON* const kDestination =
-          cJSON_GetObjectItemCaseSensitive(kLeg, "Destination");
-      const cJSON* const kDestinationName =
-          cJSON_GetObjectItemCaseSensitive(kDestination, "name");
-      const cJSON* const kDestinationTime =
-          cJSON_GetObjectItemCaseSensitive(kDestination, "time");
+    perror("Could not allocate trips member in Trips struct");
 
-      // Print the details
-      printf("\n");
-      printf("Origin: %s\n", kOriginName->valuestring);
-      printf("Train: %s\n", kTrainName->valuestring);
-      printf("Origin time: %s\n", kOriginTime->valuestring);
-      printf("Destination: %s\n", kDestinationName->valuestring);
-      printf("Destination time: %s\n", kDestinationTime->valuestring);
-
-      // Check if there are more legs in the trip
-      cJSON* const kNextLeg = kLeg->next;
-      if (kNextLeg != NULL) {
-        const cJSON* const kNextOrigin =
-            cJSON_GetObjectItemCaseSensitive(kNextLeg, "Origin");
-        const cJSON* const kNextTrainName =
-            cJSON_GetObjectItemCaseSensitive(kNextLeg, "name");
-        const cJSON* const kNextOriginName =
-            cJSON_GetObjectItemCaseSensitive(kNextOrigin, "name");
-        const cJSON* const kNextOriginTime =
-            cJSON_GetObjectItemCaseSensitive(kNextOrigin, "time");
-
-        // Print information about switching trains
-        printf("Switching to Train: %s at %s from %s\n",
-               kNextTrainName->valuestring, kNextOriginTime->valuestring,
-               kNextOriginName->valuestring);
-      }
-    }
-
-    if (cJSON_IsArray(kLeg)) {
-      // Iterate through each leg in the trip
-      const cJSON* k_leg = NULL;
-
-      cJSON_ArrayForEach(k_leg, kLeg) {
-        // Accessing different attributes of the leg
-        const cJSON* const kOrigin =
-            cJSON_GetObjectItemCaseSensitive(k_leg, "Origin");
-        const cJSON* const kTrainName =
-            cJSON_GetObjectItemCaseSensitive(k_leg, "name");
-        const cJSON* const kOriginName =
-            cJSON_GetObjectItemCaseSensitive(kOrigin, "name");
-        const cJSON* const kOriginTime =
-            cJSON_GetObjectItemCaseSensitive(kOrigin, "time");
-        const cJSON* const kDestination =
-            cJSON_GetObjectItemCaseSensitive(k_leg, "Destination");
-        const cJSON* const kDestinationName =
-            cJSON_GetObjectItemCaseSensitive(kDestination, "name");
-        const cJSON* const kDestinationTime =
-            cJSON_GetObjectItemCaseSensitive(kDestination, "time");
-
-        // Print the details
-        printf("\n");
-        printf("Origin: %s\n", kOriginName->valuestring);
-        printf("Train: %s\n", kTrainName->valuestring);
-        printf("Origin time: %s\n", kOriginTime->valuestring);
-        printf("Destination: %s\n", kDestinationName->valuestring);
-        printf("Destination time: %s\n", kDestinationTime->valuestring);
-
-        // Check if there are more legs in the trip
-        cJSON* const kNextLeg = k_leg->next;
-        if (kNextLeg != NULL) {
-          const cJSON* const kNextOrigin =
-              cJSON_GetObjectItemCaseSensitive(kNextLeg, "Origin");
-          const cJSON* const kNextTrainName =
-              cJSON_GetObjectItemCaseSensitive(kNextLeg, "name");
-          const cJSON* const kNextOriginName =
-              cJSON_GetObjectItemCaseSensitive(kNextOrigin, "name");
-          const cJSON* const kNextOriginTime =
-              cJSON_GetObjectItemCaseSensitive(kNextOrigin, "time");
-
-          // Print information about switching trains
-          printf("Switching to Train: %s at %s from %s\n",
-                 kNextTrainName->valuestring, kNextOriginTime->valuestring,
-                 kNextOriginName->valuestring);
-        }
-      }
-    }
+    return NULL;
   }
 
-  cJSON_Delete(trip);
+  size_t trip_id = 0;
+
+  const cJSON* trip = NULL;
+  cJSON_ArrayForEach(trip, kTrips) {
+    const cJSON* const kLegs = cJSON_GetObjectItemCaseSensitive(trip, "Leg");
+
+    Leg* legs = calloc(1, sizeof(Leg));
+
+    if (!legs) {
+      free(trips->trips);
+      free(trips);
+
+      perror("Could not allocate legs array");
+
+      return NULL;
+    }
+
+    size_t number_of_legs = 0;
+
+    if (cJSON_IsObject(kLegs)) {
+      Leg* leg_data = BuildLegStruct(kLegs);
+
+      // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+      memcpy(&(legs[0]), leg_data, sizeof(Leg));
+      free(leg_data);
+
+      number_of_legs = 1;
+    }
+
+    if (cJSON_IsArray(kLegs)) {
+      Leg* legs_old = legs;
+      legs = realloc(legs, (unsigned long)cJSON_GetArraySize(kLegs));
+
+      if (!legs) {
+        free(trips->trips);
+        free(trips);
+        free(legs_old);
+
+        perror("Could not allocate legs array");
+
+        return NULL;
+      }
+
+      const cJSON* leg = NULL;
+      cJSON_ArrayForEach(leg, kLegs) {
+        Leg* leg_data = BuildLegStruct(leg);
+
+        // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        memcpy(&(legs[number_of_legs]), leg_data, sizeof(Leg));
+        free(leg_data);
+
+        number_of_legs++;
+      }
+    }
+
+    trips->trips[trip_id].trip_id = (int)trip_id;
+    trips->trips[trip_id].legs = legs;
+    trips->trips[trip_id].number_of_legs = number_of_legs;
+
+    trip_id++;
+  }
+
+  trips->number_of_trips = trip_id;
+
+  return trips;
 }
