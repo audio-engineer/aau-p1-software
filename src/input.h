@@ -1,8 +1,8 @@
 #ifndef AAU_P1_SOFTWARE_SRC_INPUT_H_
 #define AAU_P1_SOFTWARE_SRC_INPUT_H_
 
-enum YesNo {kYes = 'y', kNo = 'n'};
-enum UserChoice {kManually = 'm', kFile = 'f', kPreset = 'p'};
+enum YesNo { kYes = 'y', kNo = 'n' };
+enum UserChoice { kManually = 'm', kFile = 'f', kPreset = 'p' };
 
 typedef struct {
   double price;
@@ -29,6 +29,6 @@ typedef struct {
 
 char* ReadUserInput(const char* message);
 
-int PromptInputParameters(InputParameters* user_input);
+void PromptInputParameters(InputParameters* user_data_struct);
 
 #endif  // AAU_P1_SOFTWARE_SRC_INPUT_H_

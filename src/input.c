@@ -154,13 +154,13 @@ UserPreferences ManualAttributes(void) {
 
 UserPreferences PresetAttributes(void) {
   const double kAttributePreferences = 0.25;
-  const bool kTransportPreferences = true;
+  const bool kPredefinedTransport = true;
   const int kFuelEfficiency = 100;
 
   UserPreferences user_attributes_generic = {
       kAttributePreferences, kAttributePreferences, kAttributePreferences,
-      kAttributePreferences, kTransportPreferences, kTransportPreferences,
-      kTransportPreferences, kTransportPreferences, kFuelEfficiency};
+      kAttributePreferences, kPredefinedTransport,  kPredefinedTransport,
+      kPredefinedTransport,  kPredefinedTransport,  kFuelEfficiency};
 
   return user_attributes_generic;
 }
@@ -213,7 +213,7 @@ UserPreferences PromptAttributes(void) {
   }
 }
 
-int PromptInputParameters(InputParameters* user_parameters) {
+void PromptInputParameters(InputParameters* user_data_struct) {
   const double kAttributePreferences = 0.25;
   const bool kTransportPreferences = true;
   const int kHoursInDay = 24;
@@ -222,6 +222,7 @@ int PromptInputParameters(InputParameters* user_parameters) {
   const int kFuelEfficiency = 100;
   const int kClockHour = 12;
   const int kClockMinutes = 30;
+
   UserPreferences user_attributes_generic = {
       kAttributePreferences, kAttributePreferences, kAttributePreferences,
       kAttributePreferences, kTransportPreferences, kTransportPreferences,
@@ -235,39 +236,32 @@ int PromptInputParameters(InputParameters* user_parameters) {
   free(choose_prompts);
 
   if (choice == 'p') {
-    user_parameters->origin_location = "Frederikssund";
-    user_parameters->destination_location = "Carlsberg";
+    user_data_struct->origin_location = "Frederikssund";
+    user_data_struct->destination_location = "Carlsberg";
 
-    user_parameters->departure_time_mode = true;
-    user_parameters->clock_hour = kClockHour;
-    user_parameters->clock_minute = kClockMinutes;
+    user_data_struct->departure_time_mode = true;
+    user_data_struct->clock_hour = kClockHour;
+    user_data_struct->clock_minute = kClockMinutes;
 
-    user_parameters->user_attributes = user_attributes_generic;
-
-    return EXIT_SUCCESS;
+    user_data_struct->user_attributes = user_attributes_generic;
   }
+
   if (choice == 'm') {
     char* origin_location = ReadUserInput("Start location :");
     char* destination_location = ReadUserInput("End location :");
 
-    user_parameters->origin_location = origin_location;
-    user_parameters->destination_location = destination_location;
+    user_data_struct->origin_location = origin_location;
+    user_data_struct->destination_location = destination_location;
 
-    free(origin_location);
-    free(destination_location);
-
-    user_parameters->departure_time_mode = GetInputBoolean(
+    user_data_struct->departure_time_mode = GetInputBoolean(
         "Do you want to plan routes for Departure time? (y) Or Arrival time? "
         "(n):");
 
-    user_parameters->clock_hour =
+    user_data_struct->clock_hour =
         GetInputInteger("Input arrival/departure hour:", kHoursInDay - 1);
-    user_parameters->clock_minute = GetInputInteger(
+    user_data_struct->clock_minute = GetInputInteger(
         "Input arrival/departure minutes :", kMinutesInHour - 1);
 
-    user_parameters->user_attributes = PromptAttributes();
-
-    return EXIT_SUCCESS;
+    user_data_struct->user_attributes = PromptAttributes();
   }
-  return EXIT_FAILURE;
 }
