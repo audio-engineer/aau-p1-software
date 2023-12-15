@@ -14,12 +14,14 @@
 #include "trip.h"
 
 void Run() {
-  // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  SetUserPreference("price", 0.10);
-  SetUserPreference("time", 0.20);
-  SetUserPreference("environment", 0.30);
-  SetUserPreference("health", 0.40);
-  // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  InputParameters user = {0};
+
+  /*
+   * PromptInputParameters now saves to the preferences,json.
+   * It also handles loading from the file and presets.
+   * You can currently test the program by using predefined in the first prompt.
+   */
+  PromptInputParameters(&user);
 
   CURL* const kCurl = curl_easy_init();
 
@@ -29,16 +31,10 @@ void Run() {
     exit(EXIT_FAILURE);
   }
 
-  char* const kStartLocationInput = ReadUserInput("Enter a start location:");
-  char* const kStopLocationInput = ReadUserInput("Enter a stop location:");
-
-  printf("\n");
-
   printf("GETTING TRIP DATA...\n");
-  Trips* trips = GetTrips(kCurl, kStartLocationInput, kStopLocationInput);
 
-  free(kStartLocationInput);
-  free(kStopLocationInput);
+  Trips* trips =
+      GetTrips(kCurl, user.origin_location, user.destination_location);
 
   printf("There are %zu routes available.\n", trips->number_of_trips);
 
