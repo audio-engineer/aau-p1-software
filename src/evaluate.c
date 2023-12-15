@@ -6,10 +6,6 @@
 
 #include "preferences.h"
 
-#ifdef __APPLE__
-#include <sys/_types/_size_t.h>
-#endif
-
 /* This function is included as initial testing code to populate the struct
    array. */
 void TESTPopulateTripArray(TripData arr[], size_t size) {
@@ -70,7 +66,12 @@ void CalculateScore(
 
     // If big is bad, like price, the score is inverted.
     if (inverted) {
-      score = 1 - score;
+      score = 1.0 - score;
+    }
+
+    // Check to minimize floating number funk.
+    if (score > 1.0) {
+      score = 1.0;
     }
 
     // Relevant score member is updated.
