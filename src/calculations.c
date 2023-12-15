@@ -42,6 +42,7 @@ enum CalculationConstants {
 
 const double kMillion = 1000000.0;
 const double kRadians = M_PI / 180.0;
+const double kKilometers = 1000.0;
 
 const double kDistanceToHighway = 17.5;
 const double kWalkSpeed = 4.6;
@@ -84,7 +85,7 @@ double CalculateDistance(
   const double kHaversineC =
       2 * atan2(sqrt(kHaversineA), sqrt(1 - kHaversineA));
 
-  return kEarthRadius * kHaversineC;
+  return kEarthRadius * kHaversineC / kKilometers;
 }
 
 int CalculatePrice(

@@ -7,6 +7,7 @@
 
 #include "api_handler.h"
 #include "cJSON.h"
+#include "calculations.h"
 #include "globals.h"
 
 /**
@@ -283,4 +284,59 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
   trips->number_of_trips = trip_id;
 
   return trips;
+}
+
+void CoordinatesForStations(CURL* const curl) {
+  const char* k_ref =
+      "http://webapp.rejseplanen.dk/bin//rest.exe/"
+      "journeyDetail?ref=171774%2F109037%2F608648%2F247066%2F86%3Fdate%3D15.12."
+      "23%26station_evaId%3D8600798%26format%3Djson";
+
+  Response response = {NULL, 0};
+  DoRequest(curl, k_ref, &response);
+
+  cJSON* const kJourneyDetailReponseBody = cJSON_Parse(response.body);
+
+  const cJSON* const kJourneyDetail = cJSON_GetObjectItemCaseSensitive(
+      kJourneyDetailReponseBody, "JourneyDetail");
+  const cJSON* const kStops =
+      cJSON_GetObjectItemCaseSensitive(kJourneyDetail, "Stop");
+
+  int num_stops = cJSON_GetArraySize(kStops);
+
+  for (int i = 0; i < num_stops; ++i) {
+    const cJSON* const kStop = cJSON_GetArrayItem(kStops, i);
+    const cJSON* const kStopName =
+        cJSON_GetObjectItemCaseSensitive(kStop, "name");
+    const cJSON* const kStopX = cJSON_GetObjectItemCaseSensitive(kStop, "x");
+    const cJSON* const kStopY = cJSON_GetObjectItemCaseSensitive(kStop, "y");
+
+    if (i < num_stops - 1) {
+      const cJSON* const kNextStop = cJSON_GetArrayItem(kStops, i + 1);
+      const char* k_stop_x_next =
+          cJSON_GetObjectItemCaseSensitive(kNextStop, "x")->valuestring;
+      const char* k_stop_y_next =
+          cJSON_GetObjectItemCaseSensitive(kNextStop, "y")->valuestring;
+
+      char* endptr = NULL;
+      // Convert coordinate strings to doubles
+      double stop_x = strtod(kStopX->valuestring, &endptr);
+      double stop_y = strtod(kStopY->valuestring, &endptr);
+
+      double stop_x_next = strtod(k_stop_x_next, &endptr);
+      double stop_y_next = strtod(k_stop_y_next, &endptr);
+      double calcdist = CalculateDistance(&(CalculateDistanceParameters){
+          stop_y, stop_x, stop_y_next, stop_x_next});
+
+      printf("Stop name: %s\n", kStopName->valuestring);
+      printf("Distance between this and next stop in km: %.2f\n", calcdist);
+      printf("\n");
+    } else {
+      printf("Stop name: %s\n", kStopName->valuestring);
+      printf("This is the last stop\n");
+      printf("\n");
+    }
+  }
+
+  cJSON_Delete(kJourneyDetailReponseBody);
 }

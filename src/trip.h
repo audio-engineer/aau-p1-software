@@ -58,4 +58,6 @@ typedef struct Trips {
  */
 Trips* GetTrips(CURL* curl, const char* origin, const char* destination);
 
+void CoordinatesForStations(CURL* curl);
+
 #endif  // AAU_P1_SOFTWARE_SRC_TRIP_H_
