@@ -141,11 +141,11 @@ UserPreferences ManualAttributes(void) {
 
   if (attribute_car) {
     int attribute_car_efficiency = GetInputInteger(
-        "What is the efficiency of the car in (UNIT):", kMaxCarEfficiency);
+        "What is the efficiency of the car in kilometers/liter:",
+        kMaxCarEfficiency);
     attributes.car = attribute_car;
     attributes.car_fuel_efficiency = attribute_car_efficiency;
   } else {
-    attributes.car = false;
     attributes.car_fuel_efficiency = 0;
   }
 
@@ -223,19 +223,29 @@ void PromptInputParameters(InputParameters* user_data_struct) {
   const int kClockHour = 12;
   const int kClockMinutes = 30;
 
+  bool valid_answer = false;
+
   UserPreferences user_attributes_generic = {
       kAttributePreferences, kAttributePreferences, kAttributePreferences,
       kAttributePreferences, kTransportPreferences, kTransportPreferences,
       kTransportPreferences, kTransportPreferences, kFuelEfficiency};
 
-  char* choose_prompts = ReadUserInput(
-      "Use predefined or manually input? (p = predefined or m = manual) :");
+  char choice = 0;
 
-  char choice = choose_prompts[0];
+  while (!valid_answer) {
+    char* choose_prompts = ReadUserInput(
+        "Use predefined or manually input? (p = predefined or m = manual) :");
 
-  free(choose_prompts);
+    choice = choose_prompts[0];
 
-  if (choice == 'p') {
+    if (choice == kPreset || choice == kManually) {
+      valid_answer = true;
+    }
+
+    free(choose_prompts);
+  }
+
+  if (choice == kPreset) {
     user_data_struct->origin_location = "Frederikssund";
     user_data_struct->destination_location = "Carlsberg";
 
@@ -244,9 +254,7 @@ void PromptInputParameters(InputParameters* user_data_struct) {
     user_data_struct->clock_minute = kClockMinutes;
 
     user_data_struct->user_attributes = user_attributes_generic;
-  }
-
-  if (choice == 'm') {
+  } else if (choice == kManually) {
     char* origin_location = ReadUserInput("Start location :");
     char* destination_location = ReadUserInput("End location :");
 
