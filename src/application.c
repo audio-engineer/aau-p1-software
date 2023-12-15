@@ -33,7 +33,8 @@ void Run() {
 
   printf("GETTING TRIP DATA...\n");
 
-  Trips* trips = GetTrips(kCurl, user.origin_location, user.destination_location);
+  Trips* trips =
+      GetTrips(kCurl, user.origin_location, user.destination_location);
 
   printf("There are %zu routes available.\n", trips->number_of_trips);
 
