@@ -287,6 +287,7 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
 }
 
 void CoordinatesForStations(CURL* const curl) {
+  // This is a reference to a journey detail. More logic need to be implemented
   const char* k_ref =
       "http://webapp.rejseplanen.dk/bin//rest.exe/"
       "journeyDetail?ref=171774%2F109037%2F608648%2F247066%2F86%3Fdate%3D15.12."

@@ -53,7 +53,6 @@ void Run() {
   // Iterates over user input.
   Output(trip_data, trip_score, trip_data_size_elements);
 
-
   CoordinatesForStations(kCurl);
 
   curl_easy_cleanup(kCurl);

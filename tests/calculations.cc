@@ -7,7 +7,8 @@ extern "C" {
 // NOLINTBEGIN
 
 TEST(CalculateDistanceTest, HoejeTaastrupToTaastrup) {
-  const CalculateDistanceParameters kParameters = {55648873, 12269583, 55652550, 12302133};
+  const CalculateDistanceParameters kParameters = {55648873, 12269583, 55652550,
+                                                   12302133};
   EXPECT_EQ(2.08, CalculateDistance(&kParameters));
 }
 
