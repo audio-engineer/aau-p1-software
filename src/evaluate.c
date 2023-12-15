@@ -95,7 +95,7 @@ void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr) {
 
   CalculateScoreParameters environment_params = {
       size_arr, offsetof(TripData, environment),
-      offsetof(TripScore, environment_score), 0};
+      offsetof(TripScore, environment_score), 1};
   CalculateScore(data_arr, score_arr, &environment_params);
 
   // Calculate overall_score using all other scores.
