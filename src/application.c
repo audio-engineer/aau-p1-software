@@ -32,7 +32,13 @@ void Run() {
   }
 
   printf("GETTING TRIP DATA...\n");
-  GetTripData(kCurl, user.origin_location, user.destination_location);
+
+  Trips* trips = GetTrips(kCurl, user.origin_location, user.destination_location);
+
+  printf("There are %zu routes available.\n", trips->number_of_trips);
+
+  free(trips->trips);
+  free(trips);
 
   // Initialization of struct arrays.
   TripData trip_data[kSizeOfArrayForTesting] = {0};
