@@ -286,12 +286,14 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
   return trips;
 }
 
-void CoordinatesForStations(CURL* const curl) {
-  // This is a reference to a journey detail. More logic need to be implemented
-  const char* k_ref =
-      "http://webapp.rejseplanen.dk/bin//rest.exe/"
-      "journeyDetail?ref=171774%2F109037%2F608648%2F247066%2F86%3Fdate%3D15.12."
-      "23%26station_evaId%3D8600798%26format%3Djson";
+CoordinatesData* CoordinatesForStations(CURL* const curl,
+                                        JourneyDetailRef* journey_detail_ref) {
+  if (!journey_detail_ref || !journey_detail_ref->kRef) {
+    perror("Invalid JourneyDetailRef");
+    exit(EXIT_FAILURE);
+  }
+
+  const char* k_ref = journey_detail_ref->kRef;
 
   Response response = {NULL, 0};
   DoRequest(curl, k_ref, &response);
@@ -305,39 +307,65 @@ void CoordinatesForStations(CURL* const curl) {
 
   int num_stops = cJSON_GetArraySize(kStops);
 
-  for (int i = 0; i < num_stops; ++i) {
-    const cJSON* const kStop = cJSON_GetArrayItem(kStops, i);
-    const cJSON* const kStopName =
-        cJSON_GetObjectItemCaseSensitive(kStop, "name");
-    const cJSON* const kStopX = cJSON_GetObjectItemCaseSensitive(kStop, "x");
-    const cJSON* const kStopY = cJSON_GetObjectItemCaseSensitive(kStop, "y");
+  cJSON* k_stop = NULL;
+  cJSON* k_next_stop = NULL;
+  cJSON* k_last_stop =
+      cJSON_GetArrayItem(kStops, cJSON_GetArraySize(kStops) - 1);
 
-    if (i < num_stops - 1) {
-      const cJSON* const kNextStop = cJSON_GetArrayItem(kStops, i + 1);
-      const char* k_stop_x_next =
-          cJSON_GetObjectItemCaseSensitive(kNextStop, "x")->valuestring;
-      const char* k_stop_y_next =
-          cJSON_GetObjectItemCaseSensitive(kNextStop, "y")->valuestring;
+  // Allocate memory for CoordinatesData struct
+  CoordinatesData* coordinates_data = calloc(1, sizeof(CoordinatesData));
 
-      char* endptr = NULL;
-      // Convert coordinate strings to doubles
-      double stop_x = strtod(kStopX->valuestring, &endptr);
-      double stop_y = strtod(kStopY->valuestring, &endptr);
-
-      double stop_x_next = strtod(k_stop_x_next, &endptr);
-      double stop_y_next = strtod(k_stop_y_next, &endptr);
-      double calcdist = CalculateDistance(&(CalculateDistanceParameters){
-          stop_y, stop_x, stop_y_next, stop_x_next});
-
-      printf("Stop name: %s\n", kStopName->valuestring);
-      printf("Distance between this and next stop in km: %.2f\n", calcdist);
-      printf("\n");
-    } else {
-      printf("Stop name: %s\n", kStopName->valuestring);
-      printf("This is the last stop\n");
-      printf("\n");
-    }
+  if (!coordinates_data) {
+    perror("Could not allocate CoordinatesData");
+    exit(EXIT_FAILURE);
   }
 
+  coordinates_data->number_of_coordinates = (size_t)num_stops;
+
+  // Allocate memory for Coordinates array
+  coordinates_data->coordinates =
+      calloc((size_t)num_stops, sizeof(Coordinates));
+
+  if (!coordinates_data->coordinates) {
+    perror("Could not allocate CoordinatesData");
+    free(coordinates_data);
+    exit(EXIT_FAILURE);
+  }
+
+  size_t i = 0;
+  cJSON_ArrayForEach(k_stop, kStops) {
+    const cJSON* k_stop_name = cJSON_GetObjectItemCaseSensitive(k_stop, "name");
+    const cJSON* k_stop_x = cJSON_GetObjectItemCaseSensitive(k_stop, "x");
+    const cJSON* k_stop_y = cJSON_GetObjectItemCaseSensitive(k_stop, "y");
+
+    if (k_stop != k_last_stop) {
+      k_next_stop = cJSON_GetArrayItem(kStops, (int)i + 1);
+
+      k_next_stop = k_stop->next;
+
+      if (k_next_stop != k_last_stop) {
+        const char* k_stop_x_next =
+            cJSON_GetObjectItemCaseSensitive(k_next_stop, "x")->valuestring;
+        const char* k_stop_y_next =
+            cJSON_GetObjectItemCaseSensitive(k_next_stop, "y")->valuestring;
+
+        char* endptr = NULL;
+        // Convert coordinate strings to doubles
+        double stop_x = strtod(k_stop_x->valuestring, &endptr);
+        double stop_y = strtod(k_stop_y->valuestring, &endptr);
+
+        double stop_x_next = strtod(k_stop_x_next, &endptr);
+        double stop_y_next = strtod(k_stop_y_next, &endptr);
+        double calcdist = CalculateDistance(&(CalculateDistanceParameters){
+            stop_y, stop_x, stop_y_next, stop_x_next});
+
+        coordinates_data->coordinates[i].x = stop_x;
+        coordinates_data->coordinates[i].y = stop_y;
+        i++;
+      }
+    }
+  }
   cJSON_Delete(kJourneyDetailReponseBody);
+  free(response.body);
+  return coordinates_data;
 }
