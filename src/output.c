@@ -28,6 +28,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
         printf(
             "Error: You entered a number that was too large. Please try "
             "again.\n");
+        free(user_choice);
         continue;
       }
     }
@@ -39,6 +40,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
       switch (choice) {
         case 'q':
         case 'Q':
+          free(user_choice);
           return;
         case 'p':
         case 'P':
@@ -59,6 +61,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
         default:
           printf("%c does not trigger any functionality. Please try again.\n",
                  choice);
+          free(user_choice);
           continue;
       }
       PrintTripScoresAndData(data_arr, score_arr, size);
@@ -66,6 +69,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
       // If it is neither an integer nor a character, treat it as an error.
       printf("Error: Invalid input. You entered: %s\n", user_choice);
     }
+    free(user_choice);
   }
 }
 
