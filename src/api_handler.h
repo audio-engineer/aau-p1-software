@@ -10,6 +10,7 @@ typedef struct Response {
   size_t size;
 } Response;
 
-void DoRequest(CURL* curl, const char* endpoint, const Response* response);
+void DoRequest(CURL* curl, const char* endpoint, const Response* response,
+               bool prepend_base_url);
 
 #endif  // AAU_P1_SOFTWARE_SRC_API_HANDLER_H_

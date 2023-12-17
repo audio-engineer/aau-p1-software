@@ -47,6 +47,16 @@ typedef struct Trips {
   size_t number_of_trips;
 } Trips;
 
+typedef struct Coordinates {
+  double latitude;
+  double longitude;
+} Coordinates;
+
+typedef struct CoordinatesData {
+  Coordinates* coordinates;
+  size_t number_of_coordinates;
+} CoordinatesData;
+
 /**
  * @brief Makes an API call to Rejseplanen to get an array of possible trips.
  *
@@ -57,5 +67,15 @@ typedef struct Trips {
  * Rejseplanen API.
  */
 Trips* GetTrips(CURL* curl, const char* origin, const char* destination);
+
+/**
+ * @brief Merges the coordinates for each leg of a trip into a single array.
+ *
+ * @param curl A CURL instance.
+ * @param trip A Trip struct.
+ * @return Pointer to a CoordinatesData struct that contains a pointer to an
+ * array of Coordinates structs.
+ */
+CoordinatesData* GetCoordinatesForTrip(CURL* curl, const Trip* trip);
 
 #endif  // AAU_P1_SOFTWARE_SRC_TRIP_H_

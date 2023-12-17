@@ -1,6 +1,7 @@
 #include "api_handler.h"
 
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,16 +30,23 @@ size_t SaveResponse(const char* const data, const size_t size,
 }
 
 void DoRequest(CURL* const curl, const char* const endpoint,
-               const Response* response) {
+               const Response* response, const bool prepend_base_url) {
   char url[kBufferSize * 2] = "";
 
-  const char* const kRejseplanenApiBaseUrl =
-      "https://xmlopen.rejseplanen.dk/bin/rest.exe/";
+  if ((int)prepend_base_url) {
+    const char* const kRejseplanenApiBaseUrl =
+        "https://xmlopen.rejseplanen.dk/bin/rest.exe/";
 
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  strncat(url, kRejseplanenApiBaseUrl, strlen(kRejseplanenApiBaseUrl));
+    // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    strncat(url, kRejseplanenApiBaseUrl, strlen(kRejseplanenApiBaseUrl));
+  }
+
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(url, endpoint, strlen(endpoint));
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+#ifndef NDEBUG
+  printf("Request will be made to URL: %s\n", url);
+#endif
 
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SaveResponse);
