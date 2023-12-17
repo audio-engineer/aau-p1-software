@@ -7,7 +7,6 @@
 
 #include "api_handler.h"
 #include "cJSON.h"
-#include "calculations.h"
 #include "globals.h"
 
 /**
@@ -34,7 +33,7 @@ char* GetLocationId(CURL* const curl, const char* const location) {
 
   Response response = {NULL, 0};
 
-  DoRequest(curl, endpoint, &response);
+  DoRequest(curl, endpoint, &response, true);
 
   cJSON* const kStartLocationResponseBody = cJSON_Parse(response.body);
   free(response.body);
@@ -88,7 +87,7 @@ cJSON* GetTripArray(CURL* const curl, const char* const origin_location_id,
 
   Response response = {NULL, 0};
 
-  DoRequest(curl, endpoint, &response);
+  DoRequest(curl, endpoint, &response, true);
 
   cJSON* const kTripResponseBody = cJSON_Parse(response.body);
   free(response.body);
@@ -185,9 +184,14 @@ Leg* BuildLegStruct(const cJSON* const leg) {
   return leg_struct;
 }
 
-Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
+Trips* GetTrips(CURL* const curl, const char* origin, const char* destination) {
   char* const kOriginLocationId = GetLocationId(curl, origin);
   char* const kDestinationLocationId = GetLocationId(curl, destination);
+
+#ifndef NDEBUG
+  printf("Origin location ID: %s\n", kOriginLocationId);
+  printf("Destination location ID: %s\n", kDestinationLocationId);
+#endif
 
   Trips* trips = calloc(1, sizeof(Trips));
 
@@ -225,6 +229,8 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
   cJSON_ArrayForEach(trip, kTrips) {
     const cJSON* const kLegs = cJSON_GetObjectItemCaseSensitive(trip, "Leg");
 
+    trips->trips[trip_id].trip_id = (int)trip_id;
+
     Leg* legs = calloc(1, sizeof(Leg));
 
     if (!legs) {
@@ -250,7 +256,7 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
 
     if (cJSON_IsArray(kLegs)) {
       Leg* legs_old = legs;
-      legs = realloc(legs, (unsigned long)cJSON_GetArraySize(kLegs));
+      legs = realloc(legs, (size_t)cJSON_GetArraySize(kLegs) * sizeof(Leg));
 
       if (!legs) {
         free(trips->trips);
@@ -274,7 +280,6 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
       }
     }
 
-    trips->trips[trip_id].trip_id = (int)trip_id;
     trips->trips[trip_id].legs = legs;
     trips->trips[trip_id].number_of_legs = number_of_legs;
 
@@ -286,86 +291,167 @@ Trips* GetTrips(CURL* curl, const char* origin, const char* destination) {
   return trips;
 }
 
-CoordinatesData* CoordinatesForStations(CURL* const curl,
-                                        JourneyDetailRef* journey_detail_ref) {
-  if (!journey_detail_ref || !journey_detail_ref->kRef) {
+CoordinatesData* GetCoordinatesForLeg(CURL* const curl, const Leg* const leg) {
+  if (!leg->journey_detail_ref || !leg->journey_detail_ref->kRef) {
     perror("Invalid JourneyDetailRef");
+
     exit(EXIT_FAILURE);
   }
 
-  const char* k_ref = journey_detail_ref->kRef;
-
   Response response = {NULL, 0};
-  DoRequest(curl, k_ref, &response);
+  DoRequest(curl, leg->journey_detail_ref->kRef, &response, false);
 
-  cJSON* const kJourneyDetailReponseBody = cJSON_Parse(response.body);
+  cJSON* const kJourneyDetailResponseBody = cJSON_Parse(response.body);
+  free(response.body);
 
-  const cJSON* const kJourneyDetail = cJSON_GetObjectItemCaseSensitive(
-      kJourneyDetailReponseBody, "JourneyDetail");
-  const cJSON* const kStops =
-      cJSON_GetObjectItemCaseSensitive(kJourneyDetail, "Stop");
-
-  int num_stops = cJSON_GetArraySize(kStops);
-
-  cJSON* k_stop = NULL;
-  cJSON* k_next_stop = NULL;
-  cJSON* k_last_stop =
-      cJSON_GetArrayItem(kStops, cJSON_GetArraySize(kStops) - 1);
-
-  // Allocate memory for CoordinatesData struct
   CoordinatesData* coordinates_data = calloc(1, sizeof(CoordinatesData));
 
   if (!coordinates_data) {
     perror("Could not allocate CoordinatesData");
+
     exit(EXIT_FAILURE);
   }
 
-  coordinates_data->number_of_coordinates = (size_t)num_stops;
+  const cJSON* const kJourneyDetail = cJSON_GetObjectItemCaseSensitive(
+      kJourneyDetailResponseBody, "JourneyDetail");
+  const cJSON* const kStops =
+      cJSON_GetObjectItemCaseSensitive(kJourneyDetail, "Stop");
 
-  // Allocate memory for Coordinates array
-  coordinates_data->coordinates =
-      calloc((size_t)num_stops, sizeof(Coordinates));
+  Coordinates* coordinates =
+      calloc((size_t)cJSON_GetArraySize(kStops), sizeof(Coordinates));
 
-  if (!coordinates_data->coordinates) {
-    perror("Could not allocate CoordinatesData");
+  if (!coordinates) {
     free(coordinates_data);
+
+    perror("Could not allocate CoordinatesData");
+
     exit(EXIT_FAILURE);
   }
 
-  size_t i = 0;
-  cJSON_ArrayForEach(k_stop, kStops) {
-    const cJSON* k_stop_name = cJSON_GetObjectItemCaseSensitive(k_stop, "name");
-    const cJSON* k_stop_x = cJSON_GetObjectItemCaseSensitive(k_stop, "x");
-    const cJSON* k_stop_y = cJSON_GetObjectItemCaseSensitive(k_stop, "y");
+  size_t number_of_stops = 0;
+  bool origin_found = false;
 
-    if (k_stop != k_last_stop) {
-      k_next_stop = cJSON_GetArrayItem(kStops, (int)i + 1);
+  const cJSON* stop = NULL;
+  cJSON_ArrayForEach(stop, kStops) {
+    const cJSON* const kName = cJSON_GetObjectItemCaseSensitive(stop, "name");
+    const char* name = kName->valuestring;
 
-      k_next_stop = k_stop->next;
+    /**
+     * Continue iterating until the first stop whose name matches the trip's
+     * origin location
+     */
+    if (!origin_found && 0 != strcmp(leg->origin->kName, name)) {
+      continue;
+    }
 
-      if (k_next_stop != k_last_stop) {
-        const char* k_stop_x_next =
-            cJSON_GetObjectItemCaseSensitive(k_next_stop, "x")->valuestring;
-        const char* k_stop_y_next =
-            cJSON_GetObjectItemCaseSensitive(k_next_stop, "y")->valuestring;
+    if (!origin_found) {
+      origin_found = true;
+    }
 
-        char* endptr = NULL;
-        // Convert coordinate strings to doubles
-        double stop_x = strtod(k_stop_x->valuestring, &endptr);
-        double stop_y = strtod(k_stop_y->valuestring, &endptr);
+    const cJSON* const kLatitude = cJSON_GetObjectItemCaseSensitive(stop, "x");
+    const cJSON* const kLongitude = cJSON_GetObjectItemCaseSensitive(stop, "y");
 
-        double stop_x_next = strtod(k_stop_x_next, &endptr);
-        double stop_y_next = strtod(k_stop_y_next, &endptr);
-        double calcdist = CalculateDistance(&(CalculateDistanceParameters){
-            stop_y, stop_x, stop_y_next, stop_x_next});
+    char* end = NULL;
+    const double kLatitudeDouble = strtod(kLatitude->valuestring, &end);
+    const double kLongitudeDouble = strtod(kLongitude->valuestring, &end);
 
-        coordinates_data->coordinates[i].x = stop_x;
-        coordinates_data->coordinates[i].y = stop_y;
-        i++;
-      }
+    coordinates[number_of_stops].latitude = kLatitudeDouble;
+    coordinates[number_of_stops].longitude = kLongitudeDouble;
+
+    number_of_stops++;
+
+    // If the current stop is the trip's destination location: break
+    if (!strcmp(leg->destination->kName, name)) {
+      break;
     }
   }
-  cJSON_Delete(kJourneyDetailReponseBody);
-  free(response.body);
+
+  if (0 == number_of_stops) {
+    free(coordinates);
+
+    perror("No stops");
+
+    exit(EXIT_FAILURE);
+  }
+
+  Coordinates* coordinates_copy = calloc(number_of_stops, sizeof(Coordinates));
+
+  if (!coordinates_copy) {
+    free(coordinates);
+
+    perror("Could not allocate Coordinates");
+
+    exit(EXIT_FAILURE);
+  }
+
+  memcpy(coordinates_copy, coordinates, number_of_stops * sizeof(Coordinates));
+  free(coordinates);
+
+  coordinates_data->number_of_coordinates = number_of_stops;
+  coordinates_data->coordinates = coordinates_copy;
+
+  cJSON_Delete(kJourneyDetailResponseBody);
+
+  return coordinates_data;
+}
+
+CoordinatesData* GetCoordinatesForTrip(CURL* const curl,
+                                       const Trip* const trip) {
+  const size_t kNumberOfLegs = trip->number_of_legs;
+
+  if (1 > kNumberOfLegs) {
+    perror("Invalid number of legs in trip");
+
+    exit(EXIT_FAILURE);
+  }
+
+  CoordinatesData* coordinates_data = calloc(1, sizeof(CoordinatesData));
+  Coordinates* coordinates = calloc(1, sizeof(Coordinates));
+
+  size_t total_number_of_coordinates = 0;
+  size_t leg_index = 0;
+
+  for (leg_index = 0; leg_index < kNumberOfLegs; leg_index++) {
+    CoordinatesData* leg_coordinates =
+        GetCoordinatesForLeg(curl, &(trip->legs[leg_index]));
+    const size_t kLegNumberOfCoordinates =
+        leg_coordinates->number_of_coordinates;
+
+#ifndef NDEBUG
+    printf("Leg: %zu, number of stops: %zu\n", leg_index + 1,
+           kLegNumberOfCoordinates);
+#endif
+
+    Coordinates* coordinates_old = coordinates;
+    coordinates = realloc(
+        coordinates, (total_number_of_coordinates + kLegNumberOfCoordinates) *
+                         sizeof(Coordinates));
+
+    if (!coordinates) {
+      free(coordinates_data);
+      free(coordinates_old);
+
+      perror("Could not allocate Coordinates");
+
+      exit(EXIT_FAILURE);
+    }
+
+    memcpy(&(coordinates[total_number_of_coordinates]),
+           leg_coordinates->coordinates,
+           kLegNumberOfCoordinates * sizeof(Coordinates));
+
+    total_number_of_coordinates += kLegNumberOfCoordinates;
+
+    free(leg_coordinates);
+  }
+
+  coordinates_data->number_of_coordinates = total_number_of_coordinates;
+  coordinates_data->coordinates = coordinates;
+
+#ifndef NDEBUG
+  printf("Total number of stops on trip: %zu\n",
+         coordinates_data->number_of_coordinates);
+#endif
+
   return coordinates_data;
 }

@@ -12,6 +12,12 @@ TEST(CalculateDistanceTest, HoejeTaastrupToTaastrup) {
   EXPECT_EQ(2.08, CalculateDistance(&kParameters));
 }
 
+TEST(CalculateDistanceTest, DuplicateStationInArray) {
+  const CalculateDistanceParameters kParameters = {55648873, 12269583, 55648873,
+                                                   12269583};
+  EXPECT_EQ(0, CalculateDistance(&kParameters));
+}
+
 TEST(CalculatePriceTest, Train30kmAdult0) {
   const CalculatePriceParameters kParameters = {kTrain, 30, false, 0};
   EXPECT_EQ(900, CalculatePrice(&kParameters));

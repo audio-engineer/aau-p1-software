@@ -15,7 +15,7 @@ void Run() {
   InputParameters user = {0};
 
   /*
-   * PromptInputParameters now saves to the preferences,json.
+   * PromptInputParameters now saves to the preferences.json.
    * It also handles loading from the file and presets.
    * You can currently test the program by using predefined in the first prompt.
    */
@@ -34,8 +34,16 @@ void Run() {
   Trips* trips =
       GetTrips(kCurl, user.origin_location, user.destination_location);
 
-  printf("There are %zu routes available.\n", trips->number_of_trips);
+  printf("There are %zu distinct routes available for this trip.\n",
+         trips->number_of_trips);
 
+  // Start test
+  CoordinatesData* coordinates_for_trip =
+      GetCoordinatesForTrip(kCurl, &(trips->trips[0]));
+  free(coordinates_for_trip);
+  // End test
+
+  //  free(coordinates_for_trip);
   free(trips->trips);
   free(trips);
 
@@ -52,8 +60,6 @@ void Run() {
 
   // Iterates over user input.
   Output(trip_data, trip_score, trip_data_size_elements);
-
-  CoordinatesForStations(kCurl);
 
   curl_easy_cleanup(kCurl);
 

@@ -47,12 +47,12 @@ typedef struct Trips {
   size_t number_of_trips;
 } Trips;
 
-typedef struct {
-  double x;
-  double y;
+typedef struct Coordinates {
+  double latitude;
+  double longitude;
 } Coordinates;
 
-typedef struct {
+typedef struct CoordinatesData {
   Coordinates* coordinates;
   size_t number_of_coordinates;
 } CoordinatesData;
@@ -68,6 +68,14 @@ typedef struct {
  */
 Trips* GetTrips(CURL* curl, const char* origin, const char* destination);
 
-//void CoordinatesForStations(CURL* curl);
+/**
+ * @brief Merges the coordinates for each leg of a trip into a single array.
+ *
+ * @param curl A CURL instance.
+ * @param trip A Trip struct.
+ * @return Pointer to a CoordinatesData struct that contains a pointer to an
+ * array of Coordinates structs.
+ */
+CoordinatesData* GetCoordinatesForTrip(CURL* curl, const Trip* trip);
 
 #endif  // AAU_P1_SOFTWARE_SRC_TRIP_H_
