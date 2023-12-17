@@ -384,6 +384,7 @@ CoordinatesData* GetCoordinatesForLeg(CURL* const curl, const Leg* const leg) {
     exit(EXIT_FAILURE);
   }
 
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   memcpy(coordinates_copy, coordinates, number_of_stops * sizeof(Coordinates));
   free(coordinates);
 
@@ -436,6 +437,7 @@ CoordinatesData* GetCoordinatesForTrip(CURL* const curl,
       exit(EXIT_FAILURE);
     }
 
+    // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     memcpy(&(coordinates[total_number_of_coordinates]),
            leg_coordinates->coordinates,
            kLegNumberOfCoordinates * sizeof(Coordinates));
