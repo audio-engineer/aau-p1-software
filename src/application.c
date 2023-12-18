@@ -29,8 +29,6 @@ void Run() {
     exit(EXIT_FAILURE);
   }
 
-  printf("GETTING TRIP DATA...\n");
-
   Trips* trips =
       GetTrips(kCurl, user.origin_location, user.destination_location);
 
@@ -43,23 +41,26 @@ void Run() {
   free(coordinates_for_trip);
   // End test
 
+  // Initialization of struct arrays.
+  TripData* trip_data = NULL;
+  trip_data = (TripData*)calloc(trips->number_of_trips, sizeof(TripData));
+  TripScore* trip_score = NULL;
+  trip_score = (TripScore*)calloc(trips->number_of_trips, sizeof(TripScore));
+
+  // Function to populate data array to be deleted later.
+  TESTPopulateTripArray(trip_data, trips->number_of_trips);
+
+  // Reads data from data array and writes data to score array.
+  Evaluate(trip_data, trip_score, trips->number_of_trips);
+
+  // Iterates over user input.
+  Output(trip_data, trip_score, trips->number_of_trips, trips);
+
   //  free(coordinates_for_trip);
   free(trips->trips);
   free(trips);
-
-  // Initialization of struct arrays.
-  TripData trip_data[kSizeOfArrayForTesting] = {0};
-  TripScore trip_score[kSizeOfArrayForTesting] = {0};
-  size_t trip_data_size_elements = sizeof(trip_data) / sizeof(TripData);
-
-  // Function to populate data array to be deleted later.
-  TESTPopulateTripArray(trip_data, trip_data_size_elements);
-
-  // Reads data from data array and writes data to score array.
-  Evaluate(trip_data, trip_score, trip_data_size_elements);
-
-  // Iterates over user input.
-  Output(trip_data, trip_score, trip_data_size_elements);
+  free(trip_data);
+  free(trip_score);
 
   curl_easy_cleanup(kCurl);
 

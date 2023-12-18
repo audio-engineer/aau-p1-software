@@ -8,9 +8,11 @@
 #include "evaluate.h"
 #include "input.h"
 #include "sort.h"
+#include "trip.h"
 
 // Function outputs data about the trips.
-void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
+void Output(TripData data_arr[], TripScore score_arr[], size_t size,
+            Trips* trips) {
   // Initial sort and print of the trip data and score data.
   SortRoutes(score_arr, "overall", size);
   PrintTripScoresAndData(data_arr, score_arr, size);
@@ -18,20 +20,21 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
   // Iterating until termination.
   while (1) {
     char* user_choice = ReadUserInput(
-        "View route details (1-5), sort the list (Price (P),Time (T), "
+        "View route details (number), sort the list (Price (P),Time (T), "
         "Environment (E), Overall (O)) or terminate (Q): ");
 
     if (IsInteger(user_choice)) {
       long choice = strtol(user_choice, NULL, kBaseTen);
       printf("You entered: %ld\n", choice);
-      if (choice > kMaxAmountRoutesToPrint) {
+      if (choice > (long)size || choice > kMaxAmountRoutesToPrint) {
         printf(
             "Error: You entered a number that was too large. Please try "
             "again.\n");
+        free(user_choice);
         continue;
       }
+      PrintRouteDetails(trips, choice, score_arr, size);
     }
-    // TODO(unknown): Print route details.
 
     else if (IsCharacter(user_choice)) {
       char choice = user_choice[0];
@@ -39,6 +42,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
       switch (choice) {
         case 'q':
         case 'Q':
+          free(user_choice);
           return;
         case 'p':
         case 'P':
@@ -59,6 +63,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
         default:
           printf("%c does not trigger any functionality. Please try again.\n",
                  choice);
+          free(user_choice);
           continue;
       }
       PrintTripScoresAndData(data_arr, score_arr, size);
@@ -66,6 +71,7 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size) {
       // If it is neither an integer nor a character, treat it as an error.
       printf("Error: Invalid input. You entered: %s\n", user_choice);
     }
+    free(user_choice);
   }
 }
 
@@ -112,3 +118,45 @@ bool IsInteger(const char* str) {
 // Function to test for if str is char.
 // NOLINTNEXTLINE(readability-implicit-bool-conversion)
 bool IsCharacter(const char* str) { return (strlen(str) == 1); }
+
+void PrintRouteDetails(Trips* trips, long choice, TripScore score_arr[],
+                       size_t number_trips) {
+  int trip_id = score_arr[choice - 1].trip_id;
+  size_t trip_id_index = 0;
+
+  for (trip_id_index = 0; trip_id_index < number_trips; trip_id_index++) {
+    if (trips->trips[trip_id_index].trip_id == trip_id) {
+      break;
+    }
+  }
+
+  printf("Number of legs in the chosen trip: %zu\n",
+         trips->trips[trip_id_index].number_of_legs);
+  printf("--------------------------------------------------\n");
+  for (size_t i = 0; i < trips->trips[trip_id_index].number_of_legs; i++) {
+    printf("Leg %zu:\n", i + 1);
+    printf("Transportation name:       %s\n",
+           trips->trips[trip_id_index].legs[i].name);
+    printf("Transportation type:       %s\n",
+           trips->trips[trip_id_index].legs[i].type);
+    printf("\n");
+    printf("Origin station name:       %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kName);
+    printf("Origin station time:       %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kTime);
+    printf("Origin station date:       %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kDate);
+    printf("Origin station Track:      %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kRtTrack);
+    printf("\n");
+    printf("Destination station name:  %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kName);
+    printf("Destination station time:  %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kTime);
+    printf("Destination station date:  %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kDate);
+    printf("Destination station Track: %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kRtTrack);
+    printf("--------------------------------------------------\n");
+  }
+}

@@ -13,7 +13,7 @@ void TESTPopulateTripArray(TripData arr[], size_t size) {
 
   // Populating the struct array.
   for (size_t i = 0; i < size; i++) {
-    arr[i].trip_id = (int)i + 1;
+    arr[i].trip_id = (int)i;
 #ifdef __linux__
     // NOLINTBEGIN(concurrency-mt-unsafe)
     arr[i].price = (double)(rand() % kArbitrarySizeOfValuesInTest);
