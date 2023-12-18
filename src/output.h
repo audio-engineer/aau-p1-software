@@ -16,6 +16,7 @@ bool IsInteger(const char* str);
 
 bool IsCharacter(const char* str);
 
-void PrintRouteDetails(Trips* trips, long choice, TripScore score_arr[], size_t number_trips);
+void PrintRouteDetails(Trips* trips, long choice, TripScore score_arr[],
+                       size_t number_trips);
 
 #endif  // AAU_P1_SOFTWARE_SRC_OUTPUT_H_

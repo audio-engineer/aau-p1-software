@@ -130,22 +130,33 @@ void PrintRouteDetails(Trips* trips, long choice, TripScore score_arr[],
     }
   }
 
-  printf("Number of legs in the chosen trip: %zu\n", trips->trips[trip_id_index].number_of_legs);
+  printf("Number of legs in the chosen trip: %zu\n",
+         trips->trips[trip_id_index].number_of_legs);
   printf("--------------------------------------------------\n");
   for (size_t i = 0; i < trips->trips[trip_id_index].number_of_legs; i++) {
     printf("Leg %zu:\n", i + 1);
-    printf("Transportation name:       %s\n", trips->trips[trip_id_index].legs[i].name);
-    printf("Transportation type:       %s\n", trips->trips[trip_id_index].legs[i].type);
+    printf("Transportation name:       %s\n",
+           trips->trips[trip_id_index].legs[i].name);
+    printf("Transportation type:       %s\n",
+           trips->trips[trip_id_index].legs[i].type);
     printf("\n");
-    printf("Origin station name:       %s\n", trips->trips[trip_id_index].legs[i].origin->kName);
-    printf("Origin station time:       %s\n", trips->trips[trip_id_index].legs[i].origin->kTime);
-    printf("Origin station date:       %s\n", trips->trips[trip_id_index].legs[i].origin->kDate);
-    printf("Origin station Track:      %s\n", trips->trips[trip_id_index].legs[i].origin->kRtTrack);
+    printf("Origin station name:       %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kName);
+    printf("Origin station time:       %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kTime);
+    printf("Origin station date:       %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kDate);
+    printf("Origin station Track:      %s\n",
+           trips->trips[trip_id_index].legs[i].origin->kRtTrack);
     printf("\n");
-    printf("Destination station name:  %s\n", trips->trips[trip_id_index].legs[i].destination->kName);
-    printf("Destination station time:  %s\n", trips->trips[trip_id_index].legs[i].destination->kTime);
-    printf("Destination station date:  %s\n", trips->trips[trip_id_index].legs[i].destination->kDate);
-    printf("Destination station Track: %s\n", trips->trips[trip_id_index].legs[i].destination->kRtTrack);
+    printf("Destination station name:  %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kName);
+    printf("Destination station time:  %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kTime);
+    printf("Destination station date:  %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kDate);
+    printf("Destination station Track: %s\n",
+           trips->trips[trip_id_index].legs[i].destination->kRtTrack);
     printf("--------------------------------------------------\n");
   }
 }
