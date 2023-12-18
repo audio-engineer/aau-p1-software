@@ -103,7 +103,7 @@ int CalculatePrice(
     case kTrain:
     case kSTrain:
     case kBus:
-      zones = kDistance / kAverageZoneSize;
+      zones = (kDistance / kAverageZoneSize) + 1;
 
       if (zones > kTrainPriceTableSize - 1) {
         zones = kTrainPriceTableSize - 1;
@@ -111,7 +111,9 @@ int CalculatePrice(
 
       price = kTrainPriceTable[zones];
 
-      if (kIsUng) {
+      if ((int)kIsUng && price < kUngNormalPrice) {
+        price = kUngExtraPrice;
+      } else if ((int)kIsUng) {
         price = (price - kUngNormalPrice) / 2 + kUngExtraPrice;
       }
 
@@ -153,7 +155,7 @@ int CalculatePrice(
   return price;
 }
 
-char* CalculateTime(
+double CalculateTime(
     const CalculateTimeParameters* const calculate_time_parameters) {
   const ModeOfTransport kModeOfTransport =
       calculate_time_parameters->kModeOfTransport;
@@ -161,9 +163,10 @@ char* CalculateTime(
   const char* departure_time = calculate_time_parameters->departure_time;
   const char* arrival_time = calculate_time_parameters->arrival_time;
 
-  int hrs = 0;
-  int mins = 0;
+  double time = 0;
 
+  double hrs = 0;
+  double mins = 0;
   int hrs_first = 0;
   int mins_first = 0;
   int hrs_second = 0;
@@ -192,51 +195,35 @@ char* CalculateTime(
         hrs += kTimeHoursInDay;
       }
 
+      time = hrs + mins / kTimeMinutesInHour;
+
       break;
 
     case kCar:
     case kEv:
       car_highway_time = (kDistance - kDistanceToHighway) / kCarSpeedHighway;
       car_city_time = kDistanceToHighway / kCarSpeedCity;
-
-      hrs = (int)(car_highway_time + car_city_time);
-      mins =
-          (int)((car_highway_time + car_city_time - hrs) * kTimeMinutesInHour);
+      time = (car_highway_time + car_city_time) * kTimeMinutesInHour;
 
       break;
 
     case kBike:
-      hrs = (int)(kDistance / kBikeSpeed);
-      mins = (int)((kDistance / kBikeSpeed - hrs) * kTimeMinutesInHour);
+      time = (kDistance / kBikeSpeed) * kTimeMinutesInHour;
 
       break;
 
     case kWalk:
-      hrs = (int)(kDistance / kWalkSpeed);
-      mins = (int)((kDistance / kWalkSpeed - hrs) * kTimeMinutesInHour);
+      time = (kDistance / kWalkSpeed) * kTimeMinutesInHour;
 
       break;
 
     default:
       perror("Invalid type");
 
-      return NULL;
+      return EXIT_FAILURE;
   }
 
-  char time_new[kTimeBufferSize] = {0};
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  sprintf(time_new, "%02d:%02d", hrs, mins);
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-  char* time_copy = calloc(strlen(time_new), sizeof(char));
-  if (!time_copy) {
-    perror("Failed to allocate memory");
-    return NULL;
-  }
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
-  strcpy(time_copy, time_new);
-  // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
-
-  return time_copy;
+  return time;
 }
 
 char* CalculateSecondTime(const CalculateSecondTimeParameters* const

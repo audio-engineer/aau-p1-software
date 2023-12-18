@@ -18,19 +18,19 @@ TEST(CalculateDistanceTest, DuplicateStationInArray) {
   EXPECT_EQ(0, CalculateDistance(&kParameters));
 }
 
-TEST(CalculatePriceTest, Train30kmAdult0) {
-  const CalculatePriceParameters kParameters = {kTrain, 30, false, 0};
-  EXPECT_EQ(900, CalculatePrice(&kParameters));
+TEST(CalculatePriceTest, Train3kmAdult0) {
+  const CalculatePriceParameters kParameters = {kTrain, 3, false, 0};
+  EXPECT_EQ(390, CalculatePrice(&kParameters));
 }
 
 TEST(CalculatePriceTest, Train100kmAdult10) {
   const CalculatePriceParameters kParameters = {kTrain, 100, false, 10};
-  EXPECT_EQ(2730, CalculatePrice(&kParameters));
+  EXPECT_EQ(2880, CalculatePrice(&kParameters));
 }
 
 TEST(CalculatePriceTest, Train150kmYoung0) {
   const CalculatePriceParameters kParameters = {kTrain, 150, true, 0};
-  EXPECT_EQ(1294, CalculatePrice(&kParameters));
+  EXPECT_EQ(1324, CalculatePrice(&kParameters));
 }
 
 TEST(CalculatePriceTest, Train400kmYoung0) {

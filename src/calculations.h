@@ -49,7 +49,7 @@ double CalculateDistance(
 
 int CalculatePrice(const CalculatePriceParameters* calculate_price_parameters);
 
-char* CalculateTime(const CalculateTimeParameters* calculate_time_parameters);
+double CalculateTime(const CalculateTimeParameters* calculate_time_parameters);
 
 char* CalculateSecondTime(
     const CalculateSecondTimeParameters* calculate_second_time_parameter);
