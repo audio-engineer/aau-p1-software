@@ -47,7 +47,7 @@ void CalculateScore(TripData trip_data[], TripScore trip_score[],
 
 void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr);
 
-void CalculateTripData(TripData data_arr[], Trips* trips, CURL* const curl,
+void CalculateTripData(TripData data_arr[], Trips* trips, CURL* curl,
                        InputParameters* user_input_parameters);
 
 double CalculateLegDistance(CURL* k_curl, const Trip* trip, size_t leg_index);
