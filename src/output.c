@@ -99,6 +99,7 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
 #ifndef NDEBUG
     printf("ID: %3d ", score_arr[i].trip_id);
 #endif
+    printf("Distance: %6.2lf ", data_arr[trip_index].trip_distance);
     printf("P: %6.2lf ", data_arr[trip_index].price);
     printf("T: %6.2lf ", data_arr[trip_index].time);
     printf("E: %6.2lf ", data_arr[trip_index].environment);

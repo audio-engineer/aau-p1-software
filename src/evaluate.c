@@ -4,30 +4,74 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "calculations.h"
+#include "curl/curl.h"
+#include "curl/easy.h"
+#include "input.h"
 #include "preferences.h"
+#include "trip.h"
 
-/* This function is included as initial testing code to populate the struct
-   array. */
-void TESTPopulateTripArray(TripData arr[], size_t size) {
-  srand((unsigned int)time(NULL));
+void CalculateTripData(TripData trip_data_arr[], Trips* trips,
+                       CURL* const k_curl,
+                       InputParameters* user_input_parameters) {
+  // Iterating through all trips.
+  for (size_t trip_index = 0; trip_index < trips->number_of_trips;
+       trip_index++) {
+    double trip_distance = 0;
+    trip_data_arr[trip_index].trip_id = trips->trips[trip_index].trip_id;
 
-  // Populating the struct array.
-  for (size_t i = 0; i < size; i++) {
-    arr[i].trip_id = (int)i;
-#ifdef __linux__
-    // NOLINTBEGIN(concurrency-mt-unsafe)
-    arr[i].price = (double)(rand() % kArbitrarySizeOfValuesInTest);
-    arr[i].health = (double)(rand() % kArbitrarySizeOfValuesInTest);
-    arr[i].time = (double)(rand() % kArbitrarySizeOfValuesInTest);
-    arr[i].environment = (double)(rand() % kArbitrarySizeOfValuesInTest);
-    // NOLINTEND(concurrency-mt-unsafe)
-#elifdef __APPLE__
-    arr[i].price = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
-    arr[i].health = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
-    arr[i].time = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
-    arr[i].environment = (double)(arc4random() % kArbitrarySizeOfValuesInTest);
-#endif
+    // Iterating through all legs.
+    for (size_t leg_index = 0;
+         leg_index < trips->trips[trip_index].number_of_legs; leg_index++) {
+      // Calculating leg distance
+      double leg_distance = 0;
+      leg_distance = CalculateLegDistance(k_curl, trips->trips, leg_index);
+
+      // Tracking sum og all legs.
+      trip_distance += leg_distance;
+
+      // Calculating attributes for each leg and tracking sum.
+      CalculatePriceParameters price_calculation_params = {
+          trips->trips[trip_index].legs->type[leg_index], leg_distance, false,
+          user_input_parameters->user_attributes.car_fuel_efficiency};
+      trip_data_arr[trip_index].price +=
+          CalculatePrice(&price_calculation_params);
+
+      CalculateCo2Parameters co2_calculation_params = {
+          trips->trips[trip_index].legs->type[leg_index], leg_distance,
+          user_input_parameters->user_attributes.car_fuel_efficiency};
+      trip_data_arr[trip_index].environment +=
+          CalculateCo2(&co2_calculation_params);
+
+      // TODO(unknown): Add time attribute calculation.
+    }
+
+    // Updating final distance for a trip.
+    trip_data_arr[trip_index].trip_distance = trip_distance;
   }
+}
+
+double CalculateLegDistance(CURL* const k_curl, const Trip* const trip,
+                            size_t leg_index) {
+  // Initializing a pointer to all coordinates of a leg.
+  CoordinatesData* coordinates_for_leg =
+      GetCoordinatesForLeg(k_curl, &(trip->legs[leg_index]));
+  double distance = 0;
+
+  // Iterating through all coordinates of a leg.
+  for (size_t coordinate_index = 0;
+       coordinate_index + 1 < coordinates_for_leg->number_of_coordinates;
+       coordinate_index++) {
+    // Calculating the distances between the coordinates.
+    CalculateDistanceParameters distance_params = {
+        coordinates_for_leg->coordinates[coordinate_index].latitude,
+        coordinates_for_leg->coordinates[coordinate_index].longitude,
+        coordinates_for_leg->coordinates[coordinate_index + 1].latitude,
+        coordinates_for_leg->coordinates[coordinate_index + 1].longitude};
+    // Keeping track of sum.
+    distance += CalculateDistance(&distance_params);
+  }
+  return distance;
 }
 
 void CalculateScore(
@@ -67,13 +111,18 @@ void CalculateScore(
     read_member = (void*)((char*)&trip_data[j] + read_offset);
     write_member = (void*)((char*)&trip_score[j] + write_offset);
 
+    double score = 0;
     // Relative score calculation
-    double score = (*(double*)read_member - attribute_smallest) /
-                   (attribute_largest - attribute_smallest);
+    if (attribute_largest - attribute_smallest != 0) {
+      score = (*(double*)read_member - attribute_smallest) /
+              (attribute_largest - attribute_smallest);
 
-    // If big is bad, like price, the score is inverted.
-    if (inverted) {
-      score = 1.0 - score;
+      // If big is bad, like price, the score is inverted.
+      if (inverted) {
+        score = 1.0 - score;
+      }
+    } else {
+      score = 1;
     }
 
     // Check to minimize floating number funk.
