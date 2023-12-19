@@ -165,6 +165,9 @@ double CalculateTime(
 
   double time = 0;
 
+  int hrs = 0;
+  int mins = 0;
+
   int hrs_first = 0;
   int mins_first = 0;
   int hrs_second = 0;
@@ -288,7 +291,7 @@ int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
   const int kDistance = calculate_co2_parameters->kTripDistance;
   int fuel_efficiency = calculate_co2_parameters->kFuelEfficiency;
 
-  int co2 = 0;
+  double co2 = 0;
 
   switch (kModeOfTransport) {
     case kTrain:
