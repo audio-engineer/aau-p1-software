@@ -101,9 +101,7 @@ UserPreferences ManualAttributes(void) {
   double attribute_environment =
       GetInputInteger("Sustainability preference (0-10):", kMaxNum) /
       kConvertToAttributeDouble;
-  double attribute_health =
-      GetInputInteger("Health preference (0-10):", kMaxNum) /
-      kConvertToAttributeDouble;
+  double attribute_health = 0;
 
   double attribute_total = attribute_price + attribute_health + attribute_time +
                            attribute_environment;
@@ -127,6 +125,7 @@ UserPreferences ManualAttributes(void) {
   attributes.time = attribute_time;
   attributes.environment = attribute_environment;
   attributes.health = attribute_health;
+
   // Save attributes to file.
   SetUserPreference("price", attribute_price);
   SetUserPreference("time", attribute_time);

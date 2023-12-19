@@ -25,7 +25,6 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size,
 
     if (IsInteger(user_choice)) {
       long choice = strtol(user_choice, NULL, kBaseTen);
-      printf("You entered: %ld\n", choice);
       if (choice > (long)size || choice > kMaxAmountRoutesToPrint) {
         printf(
             "Error: You entered a number that was too large. Please try "
@@ -38,7 +37,6 @@ void Output(TripData data_arr[], TripScore score_arr[], size_t size,
 
     else if (IsCharacter(user_choice)) {
       char choice = user_choice[0];
-      printf("You entered: %c\n", choice);
       switch (choice) {
         case 'q':
         case 'Q':
@@ -87,6 +85,7 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
       size < kMaxAmountRoutesToPrint ? size : kMaxAmountRoutesToPrint;
 
   // Iterating over amount of trips to be shown.
+  PrintSeparator();
   for (size_t i = 0; i < amount_routes_to_print; i++) {
     // For loop to identify the index of the relevant struct in the data_arr.
     for (trip_index = 0; trip_index < size; trip_index++) {
@@ -96,14 +95,22 @@ void PrintTripScoresAndData(TripData data_arr[], TripScore score_arr[],
     }
 
     // Printing trip data and scores.
-    printf(
-        "Priority %zu: ID: %10d P: %6.2lf T: %6.2lf E: %6.2lf --- Ps: %2.2lf "
-        "Ts: %2.2lf Es: %2.2lf --- Os: %2.2lf.\n",
-        i + 1, score_arr[i].trip_id, data_arr[trip_index].price,
-        data_arr[trip_index].time, data_arr[trip_index].environment,
-        score_arr[i].price_score, score_arr[i].time_score,
-        score_arr[i].environment_score, score_arr[i].overall_score);
+    printf("Priority %zu: ", i + 1);
+#ifndef NDEBUG
+    printf("ID: %3d ", score_arr[i].trip_id);
+#endif
+    printf("P: %6.2lf ", data_arr[trip_index].price);
+    printf("T: %6.2lf ", data_arr[trip_index].time);
+    printf("E: %6.2lf ", data_arr[trip_index].environment);
+    printf("--- ");
+    printf("Ps: %2.2lf ", score_arr[i].price_score);
+    printf("Ts: %2.2lf ", score_arr[i].time_score);
+    printf("Es: %2.2lf ", score_arr[i].environment_score);
+    printf("--- ");
+    printf("Os: %2.2lf ", score_arr[i].overall_score);
+    printf("\n");
   }
+  PrintSeparator();
   printf("\n");
 }
 
@@ -129,10 +136,10 @@ void PrintRouteDetails(Trips* trips, long choice, TripScore score_arr[],
       break;
     }
   }
-
+  PrintSeparator();
   printf("Number of legs in the chosen trip: %zu\n",
          trips->trips[trip_id_index].number_of_legs);
-  printf("--------------------------------------------------\n");
+  PrintSeparator();
   for (size_t i = 0; i < trips->trips[trip_id_index].number_of_legs; i++) {
     printf("Leg %zu:\n", i + 1);
     printf("Transportation name:       %s\n",
@@ -157,6 +164,10 @@ void PrintRouteDetails(Trips* trips, long choice, TripScore score_arr[],
            trips->trips[trip_id_index].legs[i].destination->kDate);
     printf("Destination station Track: %s\n",
            trips->trips[trip_id_index].legs[i].destination->kRtTrack);
-    printf("--------------------------------------------------\n");
+    PrintSeparator();
   }
+}
+
+void PrintSeparator(void) {
+  printf("-----------------------------------------------------------------\n");
 }
