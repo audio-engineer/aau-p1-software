@@ -75,6 +75,7 @@ int CalculateLegDistance(CURL* const k_curl, const Trip* const trip,
     // Keeping track of sum.
     distance += CalculateDistance(&distance_params);
   }
+  free(coordinates_for_leg);
   return distance;
 }
 
@@ -86,8 +87,8 @@ void CalculateScore(
   size_t write_offset = calculate_score_parameters->kWriteOffset;
   int inverted = calculate_score_parameters->kInverted;
 
-  int attribute_largest = 0;
-  int attribute_smallest = 0;
+  double attribute_largest = 0;
+  double attribute_smallest = 0;
   void* read_member = NULL;
   void* write_member = NULL;
 
@@ -99,14 +100,14 @@ void CalculateScore(
     read_member = (void*)((char*)&trip_data[i] + read_offset);
 
     // Updating largest and smallest attribute value
-    if (*(int*)read_member > attribute_largest) {
-      attribute_largest = *(int*)read_member;
+    if (*(double*)read_member > attribute_largest) {
+      attribute_largest = *(double*)read_member;
     }
     if (i == 0) {
-      attribute_smallest = *(int*)read_member;
+      attribute_smallest = *(double*)read_member;
     }
-    if (*(int*)read_member < attribute_smallest) {
-      attribute_smallest = *(int*)read_member;
+    if (*(double*)read_member < attribute_smallest) {
+      attribute_smallest = *(double*)read_member;
     }
   }
 
@@ -127,11 +128,6 @@ void CalculateScore(
       }
     } else {
       score = 1;
-    }
-
-    // Check to minimize floating number funk.
-    if (score > 1.0) {
-      score = 1.0;
     }
 
     // Relevant score member is updated.

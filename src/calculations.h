@@ -47,8 +47,7 @@ typedef struct CalculateCo2Parameters {
 int CalculateDistance(
     const CalculateDistanceParameters* calculate_distance_parameters);
 
-int CalculatePrice(
-    const CalculatePriceParameters* calculate_price_parameters);
+int CalculatePrice(const CalculatePriceParameters* calculate_price_parameters);
 
 double CalculateTime(const CalculateTimeParameters* calculate_time_parameters);
 

@@ -283,7 +283,8 @@ char* CalculateSecondTime(const CalculateSecondTimeParameters* const
 }
 
 int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
-  const ModeOfTransport kModeOfTransport = calculate_co2_parameters->kModeOfTransport;
+  const ModeOfTransport kModeOfTransport =
+      calculate_co2_parameters->kModeOfTransport;
   const int kDistance = calculate_co2_parameters->kTripDistance;
   int fuel_efficiency = calculate_co2_parameters->kFuelEfficiency;
 
