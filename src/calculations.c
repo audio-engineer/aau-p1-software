@@ -85,7 +85,7 @@ double CalculateDistance(
   const double kHaversineC =
       2 * atan2(sqrt(kHaversineA), sqrt(1 - kHaversineA));
 
-  return (kEarthRadius * kHaversineC / kKilometers);
+  return kEarthRadius * kHaversineC / kKilometers;
 }
 
 int CalculatePrice(
@@ -165,9 +165,8 @@ double CalculateTime(
 
   double time = 0;
 
-  int hrs = 0;
-  int mins = 0;
-
+  double hrs = 0;
+  double mins = 0;
   int hrs_first = 0;
   int mins_first = 0;
   int hrs_second = 0;

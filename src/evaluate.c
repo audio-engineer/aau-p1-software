@@ -87,8 +87,8 @@ void CalculateScore(
   size_t write_offset = calculate_score_parameters->kWriteOffset;
   int inverted = calculate_score_parameters->kInverted;
 
-  double attribute_largest = 0;
-  double attribute_smallest = 0;
+  int attribute_largest = 0;
+  int attribute_smallest = 0;
   void* read_member = NULL;
   void* write_member = NULL;
 
@@ -100,14 +100,14 @@ void CalculateScore(
     read_member = (void*)((char*)&trip_data[i] + read_offset);
 
     // Updating largest and smallest attribute value
-    if (*(double*)read_member > attribute_largest) {
-      attribute_largest = *(double*)read_member;
+    if (*(int*)read_member > attribute_largest) {
+      attribute_largest = *(int*)read_member;
     }
     if (i == 0) {
-      attribute_smallest = *(double*)read_member;
+      attribute_smallest = *(int*)read_member;
     }
-    if (*(double*)read_member < attribute_smallest) {
-      attribute_smallest = *(double*)read_member;
+    if (*(int*)read_member < attribute_smallest) {
+      attribute_smallest = *(int*)read_member;
     }
   }
 
@@ -158,10 +158,11 @@ void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr) {
   // Calculate overall_score using all other scores.
   for (size_t i = 0; i < size_arr; i++) {
     score_arr[i].trip_id = data_arr[i].trip_id;
-    score_arr[i].overall_score =
+    double overall_score =
         GetUserPreference("price") * score_arr[i].price_score +
         GetUserPreference("health") * score_arr[i].health_score +
         GetUserPreference("time") * score_arr[i].time_score +
         GetUserPreference("environment") * score_arr[i].environment_score;
+    score_arr[i].overall_score = overall_score;
   }
 }
