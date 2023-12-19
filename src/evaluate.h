@@ -19,11 +19,11 @@ enum ArbitrarySizes {
    decided. */
 typedef struct TripData {
   int trip_id;
-  double trip_distance;
-  double price;
-  double health;
-  double time;
-  double environment;
+  int trip_distance;
+  int price;
+  int health;
+  int time;
+  int environment;
 } TripData;
 
 typedef struct TripScore {
@@ -50,6 +50,6 @@ void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr);
 void CalculateTripData(TripData data_arr[], Trips* trips, CURL* curl,
                        InputParameters* user_input_parameters);
 
-double CalculateLegDistance(CURL* k_curl, const Trip* trip, size_t leg_index);
+int CalculateLegDistance(CURL* k_curl, const Trip* trip, size_t leg_index);
 
 #endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_

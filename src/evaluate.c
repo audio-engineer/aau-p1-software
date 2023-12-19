@@ -1,5 +1,6 @@
 #include "evaluate.h"
 
+#include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <time.h>
@@ -17,14 +18,14 @@ void CalculateTripData(TripData trip_data_arr[], Trips* trips,
   // Iterating through all trips.
   for (size_t trip_index = 0; trip_index < trips->number_of_trips;
        trip_index++) {
-    double trip_distance = 0;
+    int trip_distance = 0;
     trip_data_arr[trip_index].trip_id = trips->trips[trip_index].trip_id;
 
     // Iterating through all legs.
     for (size_t leg_index = 0;
          leg_index < trips->trips[trip_index].number_of_legs; leg_index++) {
       // Calculating leg distance
-      double leg_distance = 0;
+      int leg_distance = 0;
       leg_distance = CalculateLegDistance(k_curl, trips->trips, leg_index);
 
       // Tracking sum og all legs.
@@ -32,17 +33,20 @@ void CalculateTripData(TripData trip_data_arr[], Trips* trips,
 
       // Calculating attributes for each leg and tracking sum.
       CalculatePriceParameters price_calculation_params = {
-          trips->trips[trip_index].legs->type[leg_index], leg_distance, false,
+          (ModeOfTransport)tolower(
+              trips->trips[trip_index].legs->type[leg_index]),
+          leg_distance, false,
           user_input_parameters->user_attributes.car_fuel_efficiency};
       trip_data_arr[trip_index].price +=
           CalculatePrice(&price_calculation_params);
 
       CalculateCo2Parameters co2_calculation_params = {
-          trips->trips[trip_index].legs->type[leg_index], leg_distance,
+          (ModeOfTransport)tolower(
+              trips->trips[trip_index].legs->type[leg_index]),
+          leg_distance,
           user_input_parameters->user_attributes.car_fuel_efficiency};
       trip_data_arr[trip_index].environment +=
           CalculateCo2(&co2_calculation_params);
-
       // TODO(unknown): Add time attribute calculation.
     }
 
@@ -51,12 +55,12 @@ void CalculateTripData(TripData trip_data_arr[], Trips* trips,
   }
 }
 
-double CalculateLegDistance(CURL* const k_curl, const Trip* const trip,
-                            size_t leg_index) {
+int CalculateLegDistance(CURL* const k_curl, const Trip* const trip,
+                         size_t leg_index) {
   // Initializing a pointer to all coordinates of a leg.
   CoordinatesData* coordinates_for_leg =
       GetCoordinatesForLeg(k_curl, &(trip->legs[leg_index]));
-  double distance = 0;
+  int distance = 0;
 
   // Iterating through all coordinates of a leg.
   for (size_t coordinate_index = 0;
@@ -82,8 +86,8 @@ void CalculateScore(
   size_t write_offset = calculate_score_parameters->kWriteOffset;
   int inverted = calculate_score_parameters->kInverted;
 
-  double attribute_largest = 0;
-  double attribute_smallest = 0;
+  int attribute_largest = 0;
+  int attribute_smallest = 0;
   void* read_member = NULL;
   void* write_member = NULL;
 
@@ -95,14 +99,14 @@ void CalculateScore(
     read_member = (void*)((char*)&trip_data[i] + read_offset);
 
     // Updating largest and smallest attribute value
-    if (*(double*)read_member > attribute_largest) {
-      attribute_largest = *(double*)read_member;
+    if (*(int*)read_member > attribute_largest) {
+      attribute_largest = *(int*)read_member;
     }
     if (i == 0) {
-      attribute_smallest = *(double*)read_member;
+      attribute_smallest = *(int*)read_member;
     }
-    if (*(double*)read_member < attribute_smallest) {
-      attribute_smallest = *(double*)read_member;
+    if (*(int*)read_member < attribute_smallest) {
+      attribute_smallest = *(int*)read_member;
     }
   }
 

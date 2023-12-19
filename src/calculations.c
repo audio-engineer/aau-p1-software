@@ -55,7 +55,7 @@ const int kTrainPriceTable[kTrainPriceTableSize] = {
     4020, 4050, 4080, 4110, 4140, 4170, 4200, 4230, 4260, 4290,
     4320, 4350, 4380, 4410, 4440, 4470, 4500, 4530, 4560, 4590};
 
-double CalculateDistance(
+int CalculateDistance(
     const CalculateDistanceParameters* const calculate_distance_parameters) {
   double latitude_first = calculate_distance_parameters->kLatitudeFirst;
   double longitude_first = calculate_distance_parameters->kLongitudeFirst;
@@ -85,7 +85,7 @@ double CalculateDistance(
   const double kHaversineC =
       2 * atan2(sqrt(kHaversineA), sqrt(1 - kHaversineA));
 
-  return kEarthRadius * kHaversineC / kKilometers;
+  return (int)(kEarthRadius * kHaversineC / kKilometers);
 }
 
 int CalculatePrice(
@@ -165,8 +165,6 @@ double CalculateTime(
 
   double time = 0;
 
-  double hrs = 0;
-  double mins = 0;
   int hrs_first = 0;
   int mins_first = 0;
   int hrs_second = 0;
@@ -285,12 +283,11 @@ char* CalculateSecondTime(const CalculateSecondTimeParameters* const
 }
 
 int CalculateCo2(const CalculateCo2Parameters* calculate_co2_parameters) {
-  const ModeOfTransport kModeOfTransport =
-      calculate_co2_parameters->kModeOfTransport;
+  const ModeOfTransport kModeOfTransport = calculate_co2_parameters->kModeOfTransport;
   const int kDistance = calculate_co2_parameters->kTripDistance;
   int fuel_efficiency = calculate_co2_parameters->kFuelEfficiency;
 
-  double co2 = 0;
+  int co2 = 0;
 
   switch (kModeOfTransport) {
     case kTrain:
