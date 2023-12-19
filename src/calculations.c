@@ -55,7 +55,7 @@ const int kTrainPriceTable[kTrainPriceTableSize] = {
     4020, 4050, 4080, 4110, 4140, 4170, 4200, 4230, 4260, 4290,
     4320, 4350, 4380, 4410, 4440, 4470, 4500, 4530, 4560, 4590};
 
-int CalculateDistance(
+double CalculateDistance(
     const CalculateDistanceParameters* const calculate_distance_parameters) {
   double latitude_first = calculate_distance_parameters->kLatitudeFirst;
   double longitude_first = calculate_distance_parameters->kLongitudeFirst;
@@ -85,7 +85,7 @@ int CalculateDistance(
   const double kHaversineC =
       2 * atan2(sqrt(kHaversineA), sqrt(1 - kHaversineA));
 
-  return (int)(kEarthRadius * kHaversineC / kKilometers);
+  return (kEarthRadius * kHaversineC / kKilometers);
 }
 
 int CalculatePrice(

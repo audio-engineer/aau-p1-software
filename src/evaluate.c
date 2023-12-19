@@ -73,7 +73,7 @@ int CalculateLegDistance(CURL* const k_curl, const Trip* const trip,
         coordinates_for_leg->coordinates[coordinate_index + 1].latitude,
         coordinates_for_leg->coordinates[coordinate_index + 1].longitude};
     // Keeping track of sum.
-    distance += CalculateDistance(&distance_params);
+    distance += (int)CalculateDistance(&distance_params);
   }
   free(coordinates_for_leg);
   return distance;

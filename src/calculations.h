@@ -44,7 +44,7 @@ typedef struct CalculateCo2Parameters {
   const int kFuelEfficiency;
 } CalculateCo2Parameters;
 
-int CalculateDistance(
+double CalculateDistance(
     const CalculateDistanceParameters* calculate_distance_parameters);
 
 int CalculatePrice(const CalculatePriceParameters* calculate_price_parameters);
