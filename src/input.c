@@ -32,7 +32,7 @@ enum PresetValues {
 typedef enum HoursOrMinutes { kHours = 'h', kMinutes = 'm' } HoursOrMinutes;
 
 char* ReadUserInput(const char* const message) {
-  printf("%s%s%s ", COLOR_GREEN, message, COLOR_RESET);
+  printf("\t%s%s%s ", COLOR_GREEN, message, COLOR_RESET);
   fflush(stdout);
 
   char* input = calloc(kBufferSize, sizeof(char));
@@ -72,6 +72,10 @@ bool IsValidPreferenceSource(const char choice) {
 
 bool IsValidYesNo(const char choice) {
   return (bool)((choice == kYes) || (choice == kNo));
+}
+
+void PrintInstructionMessage(const char* const message) {
+  printf("%s%s%s\n", COLOR_YELLOW, message, COLOR_RESET);
 }
 
 char ReadCharInput(const char* const message,
@@ -135,7 +139,7 @@ char* GetTimeModePromptText(TimeMode time_mode,
 
   char* selected_time_mode = time_mode == kDeparture ? "departure" : "arrival";
   char* selected_hours_or_minutes =
-      hours_or_minutes == kHours ? " hours (0 - 23)" : " minutes (0 - 59)";
+      hours_or_minutes == kHours ? " hour (0 - 23)" : " minute (0 - 59)";
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(time_mode_prompt, "Enter ", strlen("Enter "));
@@ -151,16 +155,18 @@ char* GetTimeModePromptText(TimeMode time_mode,
 TripParameters* GetTripParameters() {
   TripParameters* trip_parameters = calloc(1, sizeof(TripParameters));
 
-  trip_parameters->origin_location = ReadUserInput("Enter origin location:");
+  PrintInstructionMessage("What are the origin and destination for your trip?");
+  trip_parameters->origin_location =
+      ReadUserInput("\U0001F4CDEnter origin location:");
   trip_parameters->destination_location =
-      ReadUserInput("Enter destination location:");
-  printf(
-      "%sDo you want the trip to be planned according to a departure time, or "
-      "arrival time?%s\n",
-      COLOR_YELLOW, COLOR_RESET);
+      ReadUserInput("\U0001F4CDEnter destination location:");
+  PrintInstructionMessage(
+      "Do you want the trip to be planned according to a departure time, or "
+      "arrival time?");
   trip_parameters->time_mode = (TimeMode)ReadCharInput(
-      "\tEnter 'd' for departure or 'a' for arrival:", IsValidTimeMode);
+      "Enter 'd' for departure or 'a' for arrival:", IsValidTimeMode);
 
+  PrintInstructionMessage("Specify your preferred time constraints.");
   char* hours_prompt =
       GetTimeModePromptText(trip_parameters->time_mode, kHours);
   trip_parameters->time_hour = ReadIntegerInput(hours_prompt, kMaximumHours);
@@ -182,20 +188,20 @@ CommutingPreferences* GetCommutingPreferences() {
   const int kMaxCarEfficiency = 500;
   const double kConvertToAttributeDouble = 10.0;
 
-  printf(
-      "%sNow assign weights (from 1 to 10) to price, time, and sustainability "
-      "in your choice of transport.%s\n",
-      COLOR_YELLOW, COLOR_RESET);
+  PrintInstructionMessage(
+      "Now assign weights (from 1 to 10) to price, time, and sustainability in "
+      "your choice of transport.");
 
   double attribute_price =
-      ReadIntegerInput("\tPrice (0 - 10):", kMaximumAttributeValue) /
+      ReadIntegerInput("\U0001F4B0Price (0 - 10):", kMaximumAttributeValue) /
       kConvertToAttributeDouble;
   double attribute_health = 0;
   double attribute_time =
-      ReadIntegerInput("\tTime (0 - 10):", kMaximumAttributeValue) /
+      ReadIntegerInput("\U0001F552Time (0 - 10):", kMaximumAttributeValue) /
       kConvertToAttributeDouble;
   double attribute_environment =
-      ReadIntegerInput("\tSustainability (0 - 10):", kMaximumAttributeValue) /
+      ReadIntegerInput("\U0001F332Sustainability (0 - 10):",
+                       kMaximumAttributeValue) /
       kConvertToAttributeDouble;
 
   double attribute_total = attribute_price + attribute_health + attribute_time +
@@ -206,14 +212,14 @@ CommutingPreferences* GetCommutingPreferences() {
   commuting_preferences->environment = attribute_environment / attribute_total;
   commuting_preferences->health = attribute_health / attribute_total;
 
+  PrintInstructionMessage("What modes of transport can your route include?");
   commuting_preferences->is_walking =
-      ReadBooleanInput("Can your route include walking? (y/n):");
+      ReadBooleanInput("\U0001F3C3Walking? (y/n):");
   commuting_preferences->is_biking =
-      ReadBooleanInput("Can your route include biking? (y/n):");
+      ReadBooleanInput("\U0001F6B4Biking? (y/n):");
   commuting_preferences->is_using_train =
-      ReadBooleanInput("Can your route include trains? (y/n):");
-  commuting_preferences->is_driving =
-      ReadBooleanInput("Can your route include a car? (y/n):");
+      ReadBooleanInput("\U0001F682Trains? (y/n):");
+  commuting_preferences->is_driving = ReadBooleanInput("\U0001F697Car? (y/n):");
 
   if (!commuting_preferences->is_driving) {
     commuting_preferences->car_fuel_efficiency = 0;
@@ -303,21 +309,19 @@ void ShowBanner() {
 }
 
 UserPreferences* GetUserPreferences() {
-  printf("%sWelcome to the personalized interactive%s\n", COLOR_CYAN,
+  printf("%sWELCOME TO THE PERSONALIZED INTERACTIVE%s\n", COLOR_CYAN,
          COLOR_RESET);
   ShowBanner();
-  printf("%sCopyright © 2023 AAU%s\n", COLOR_CYAN, COLOR_RESET);
+  printf("%sCopyright \U000000A9 2023 AAU%s\n", COLOR_CYAN, COLOR_RESET);
 
   printf("\n");
-  printf(
-      "%sWould you like to initialize using the values saved in your "
-      "preferences "
-      "file, or manually input them?%s\n",
-      COLOR_YELLOW, COLOR_RESET);
+  PrintInstructionMessage(
+      "Would you like to initialize using the values saved in your preferences "
+      "file, or manually input them?");
 
   UserPreferences* user_preferences = NULL;
 
-  switch (ReadCharInput("\tEnter 'f' for file values or 'm' for manual input:",
+  switch (ReadCharInput("Enter 'f' for file values or 'm' for manual input:",
                         IsValidPreferenceSource)) {
     case kFile:
       user_preferences = GetFilePreferences();
@@ -333,8 +337,9 @@ UserPreferences* GetUserPreferences() {
     case kManual:
       user_preferences = GetManualPreferences();
 
-      if (ReadBooleanInput(
-              "Do you want to save your preferences to a file? (y/n):")) {
+      PrintInstructionMessage(
+          "Would you like to save these preferences to the preferences file?");
+      if (ReadBooleanInput("Save to file? (y/n):")) {
         SavePreferencesToFile(user_preferences);
       }
 
