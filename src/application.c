@@ -40,7 +40,7 @@ void Run() {
   trip_score = (TripScore*)calloc(trips->number_of_trips, sizeof(TripScore));
 
   // Calculate the attributes.
-  CalculateTripData(trip_data, trips, kCurl, &user);
+  CalculateTripData(trip_data, trips, kCurl, user_preferences);
 
   // Reads data from data array and writes data to score array.
   Evaluate(trip_data, trip_score, trips->number_of_trips);

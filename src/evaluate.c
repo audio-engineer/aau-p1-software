@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "calculations.h"
@@ -14,7 +15,7 @@
 
 void CalculateTripData(TripData trip_data_arr[], Trips* trips,
                        CURL* const k_curl,
-                       InputParameters* user_input_parameters) {
+                       UserPreferences* user_input_parameters) {
   // Iterating through all trips.
   for (size_t trip_index = 0; trip_index < trips->number_of_trips;
        trip_index++) {
@@ -33,26 +34,83 @@ void CalculateTripData(TripData trip_data_arr[], Trips* trips,
 
       // Calculating attributes for each leg and tracking sum.
       CalculatePriceParameters price_calculation_params = {
-          (ModeOfTransport)tolower(
-              trips->trips[trip_index].legs->type[leg_index]),
+          DetermineModeOfTransport(trips->trips[trip_index].legs->type),
           leg_distance, false,
-          user_input_parameters->user_attributes.car_fuel_efficiency};
+          user_input_parameters->commuting_preferences->car_fuel_efficiency};
       trip_data_arr[trip_index].price +=
           CalculatePrice(&price_calculation_params);
 
       CalculateCo2Parameters co2_calculation_params = {
-          (ModeOfTransport)tolower(
-              trips->trips[trip_index].legs->type[leg_index]),
+          DetermineModeOfTransport(trips->trips[trip_index].legs->type),
           leg_distance,
-          user_input_parameters->user_attributes.car_fuel_efficiency};
+          user_input_parameters->commuting_preferences->car_fuel_efficiency};
       trip_data_arr[trip_index].environment +=
           CalculateCo2(&co2_calculation_params);
-      // TODO(unknown): Add time attribute calculation.
     }
-
-    // Updating final distance for a trip.
+    // Updating final distance for a trip and the time.
     trip_data_arr[trip_index].trip_distance = trip_distance;
+    trip_data_arr[trip_index].time = CalculateMinutes(trips->trips[trip_index]);
   }
+}
+
+int CalculateMinutes(Trip trip) {
+  // Copying strings to local variables.
+  const char* const kOriginTime = trip.legs[0].origin->kTime;
+  size_t destination_leg_index = trip.number_of_legs - 1;
+  const char* const kDestinationTime =
+      trip.legs[destination_leg_index].destination->kTime;
+  const int kMinutesPrHour = 60;
+  const int kSizeOfTimeStr = 5;
+
+  // Checking if strings are formatted correctly.
+  if (strlen(kOriginTime) < kSizeOfTimeStr ||
+      strlen(kDestinationTime) < kSizeOfTimeStr) {
+    perror("Error: Invalid time format in input strings.");
+    exit(EXIT_FAILURE);
+  }
+
+  // Initializing the hours and minutes en separate strings.
+  char origin_hours[3] = {kOriginTime[0], kOriginTime[1], '\0'};
+  char origin_minutes[3] = {kOriginTime[3], kOriginTime[4], '\0'};
+
+  char destination_hours[3] = {kDestinationTime[0], kDestinationTime[1], '\0'};
+  char destination_minutes[3] = {kDestinationTime[3], kDestinationTime[4],
+                                 '\0'};
+
+  // Calculating total minutes for each time.
+  int total_origin_minutes =
+      atoi(origin_hours) * kMinutesPrHour + atoi(origin_minutes);
+  int total_destination_minutes =
+      atoi(destination_hours) * kMinutesPrHour + atoi(destination_minutes);
+
+  // Returning the difference.
+  return total_destination_minutes - total_origin_minutes;
+}
+
+ModeOfTransport DetermineModeOfTransport(char* vehicle) {
+  // Finding the mode of transport as parsed by the API.
+  ModeOfTransport value = 0;
+  int other_train_type =
+      strcmp(vehicle, "IC") == 0 || strcmp(vehicle, "LYN") == 0 ||
+      strcmp(vehicle, "REG") == 0 || strcmp(vehicle, "TOG") == 0 ||
+      strcmp(vehicle, "M") == 0;
+  int other_bus_type = strcmp(vehicle, "BUS") == 0 ||
+                       strcmp(vehicle, "EXB") == 0 ||
+                       strcmp(vehicle, "NB") == 0 || strcmp(vehicle, "TB") == 0;
+
+  if (other_train_type) {
+    value = 't';
+  } else if (strcmp(vehicle, "S") == 0) {
+    value = 's';
+  } else if (other_bus_type) {
+    value = 'b';
+  } else if (strcmp(vehicle, "F") == 0) {
+    value = '0';
+  } else {
+    perror("Error: Type of transportation does not exist in the program.");
+    value = 0;
+  }
+  return value;
 }
 
 int CalculateLegDistance(CURL* const k_curl, const Trip* const trip,
@@ -119,7 +177,7 @@ void CalculateScore(
     double score = 0;
     // Relative score calculation
     if (attribute_largest - attribute_smallest != 0) {
-      score = (*(double*)read_member - attribute_smallest) /
+      score = (*(int*)read_member - (double)attribute_smallest) /
               (attribute_largest - attribute_smallest);
 
       // If big is bad, like price, the score is inverted.

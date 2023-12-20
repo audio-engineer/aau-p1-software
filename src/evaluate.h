@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "calculations.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
 #include "input.h"
@@ -48,8 +49,12 @@ void CalculateScore(TripData trip_data[], TripScore trip_score[],
 void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr);
 
 void CalculateTripData(TripData data_arr[], Trips* trips, CURL* curl,
-                       InputParameters* user_input_parameters);
+                       UserPreferences* user_input_parameters);
 
 int CalculateLegDistance(CURL* k_curl, const Trip* trip, size_t leg_index);
+
+ModeOfTransport DetermineModeOfTransport(char* vehicle);
+
+int CalculateMinutes(Trip trip);
 
 #endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
