@@ -60,6 +60,7 @@ int CalculateMinutes(Trip trip) {
   const char* const kDestinationTime =
       trip.legs[destination_leg_index].destination->kTime;
   const int kMinutesPrHour = 60;
+  const int kHoursPrDay = 24;
   const int kSizeOfTimeStr = 5;
 
   // Checking if strings are formatted correctly.
@@ -84,7 +85,12 @@ int CalculateMinutes(Trip trip) {
       atoi(destination_hours) * kMinutesPrHour + atoi(destination_minutes);
 
   // Returning the difference.
-  return total_destination_minutes - total_origin_minutes;
+  int total_minutes = total_destination_minutes - total_origin_minutes;
+  if (total_minutes < 0) {
+    total_minutes = kHoursPrDay * kMinutesPrHour + total_destination_minutes -
+                    total_origin_minutes;
+  }
+  return total_minutes;
 }
 
 ModeOfTransport DetermineModeOfTransport(char* vehicle) {
