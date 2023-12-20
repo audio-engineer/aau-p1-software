@@ -12,14 +12,7 @@
 #include "trip.h"
 
 void Run() {
-  InputParameters user = {0};
-
-  /*
-   * PromptInputParameters now saves to the preferences.json.
-   * It also handles loading from the file and presets.
-   * You can currently test the program by using predefined in the first prompt.
-   */
-  PromptInputParameters(&user);
+  UserPreferences* user_preferences = GetUserPreferences();
 
   CURL* const kCurl = curl_easy_init();
 
@@ -29,8 +22,7 @@ void Run() {
     exit(EXIT_FAILURE);
   }
 
-  Trips* trips =
-      GetTrips(kCurl, user.origin_location, user.destination_location);
+  Trips* trips = GetTrips(kCurl, user_preferences->trip_parameters);
 
   printf("There are %zu distinct routes available for this trip.\n",
          trips->number_of_trips);
@@ -56,7 +48,8 @@ void Run() {
   // Iterates over user input.
   Output(trip_data, trip_score, trips->number_of_trips, trips);
 
-  //  free(coordinates_for_trip);
+  FreeUserPreferences(user_preferences);
+
   free(trips->trips);
   free(trips);
   free(trip_data);
