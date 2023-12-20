@@ -157,9 +157,9 @@ TripParameters* GetTripParameters() {
 
   PrintInstructionMessage("What are the origin and destination for your trip?");
   trip_parameters->origin_location =
-      ReadUserInput("\U0001F4CDEnter origin location:");
+      ReadUserInput("\U0001F4CD Enter origin location:");
   trip_parameters->destination_location =
-      ReadUserInput("\U0001F4CDEnter destination location:");
+      ReadUserInput("\U0001F4CD Enter destination location:");
   PrintInstructionMessage(
       "Do you want the trip to be planned according to a departure time, or "
       "arrival time?");
@@ -193,14 +193,14 @@ CommutingPreferences* GetCommutingPreferences() {
       "your choice of transport.");
 
   double attribute_price =
-      ReadIntegerInput("\U0001F4B0Price (0 - 10):", kMaximumAttributeValue) /
+      ReadIntegerInput("\U0001F4B0 Price (0 - 10):", kMaximumAttributeValue) /
       kConvertToAttributeDouble;
   double attribute_health = 0;
   double attribute_time =
-      ReadIntegerInput("\U0001F552Time (0 - 10):", kMaximumAttributeValue) /
+      ReadIntegerInput("\U0001F552 Time (0 - 10):", kMaximumAttributeValue) /
       kConvertToAttributeDouble;
   double attribute_environment =
-      ReadIntegerInput("\U0001F332Sustainability (0 - 10):",
+      ReadIntegerInput("\U0001F332 Sustainability (0 - 10):",
                        kMaximumAttributeValue) /
       kConvertToAttributeDouble;
 
@@ -214,12 +214,13 @@ CommutingPreferences* GetCommutingPreferences() {
 
   PrintInstructionMessage("What modes of transport can your route include?");
   commuting_preferences->is_walking =
-      ReadBooleanInput("\U0001F3C3Walking? (y/n):");
+      ReadBooleanInput("\U0001F3C3 Walking? (y/n):");
   commuting_preferences->is_biking =
-      ReadBooleanInput("\U0001F6B4Biking? (y/n):");
+      ReadBooleanInput("\U0001F6B4 Biking? (y/n):");
   commuting_preferences->is_using_train =
-      ReadBooleanInput("\U0001F682Trains? (y/n):");
-  commuting_preferences->is_driving = ReadBooleanInput("\U0001F697Car? (y/n):");
+      ReadBooleanInput("\U0001F682 Trains? (y/n):");
+  commuting_preferences->is_driving =
+      ReadBooleanInput("\U0001F697 Car? (y/n):");
 
   if (!commuting_preferences->is_driving) {
     commuting_preferences->car_fuel_efficiency = 0;
