@@ -8,6 +8,7 @@
 #include "api_handler.h"
 #include "cJSON.h"
 #include "globals.h"
+#include "input.h"
 
 /**
  * @brief Makes a call to the Rejseplanen API to get the location ID of the
@@ -72,9 +73,16 @@ char* GetLocationId(CURL* const curl, const char* const location) {
  * @param destination_location_id The location ID of the destination location.
  * @return Pointer to heap-allocated cJSON struct.
  */
-cJSON* GetTripArray(CURL* const curl, const char* const origin_location_id,
+cJSON* GetTripArray(CURL* const curl, TripParameters* trip_parameters,
+                    const char* const origin_location_id,
                     const char* const destination_location_id) {
-  char endpoint[kBufferSize] = {0};
+  char time[kBufferSize] = {0};
+
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  sprintf(time, "%d:%d", trip_parameters->time_hour,
+          trip_parameters->time_minute);
+
+  char endpoint[kBufferSize * 2] = {0};
 
   // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   strncat(endpoint, "trip?originId=", strlen("trip?originId="));
@@ -82,6 +90,11 @@ cJSON* GetTripArray(CURL* const curl, const char* const origin_location_id,
   strncat(endpoint, "&destId=", strlen("&destId="));
   strncat(endpoint, destination_location_id, strlen(destination_location_id));
   strncat(endpoint, "&format=json", strlen("&format=json"));
+  strncat(endpoint, "&time=", strlen("&time="));
+  strncat(endpoint, time, strlen(time));
+  strncat(endpoint, "&searchForArrival=", strlen("&searchForArrival="));
+  strncat(endpoint, trip_parameters->time_mode == kArrival ? "1" : "0",
+          sizeof(char));
   strncat(endpoint, "&useBus=0", strlen("&useBus=0"));
   // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
@@ -156,7 +169,10 @@ Leg* BuildLegStruct(const cJSON* const leg) {
   const cJSON* const kJourneyDetailRef =
       cJSON_GetObjectItemCaseSensitive(leg, "JourneyDetailRef");
   JourneyDetailRef journey_detail_ref = {
-      cJSON_GetObjectItemCaseSensitive(kJourneyDetailRef, "ref")->valuestring};
+      kJourneyDetailRef
+          ? cJSON_GetObjectItemCaseSensitive(kJourneyDetailRef, "ref")
+                ->valuestring
+          : ""};
 
   Leg* leg_struct = calloc(1, sizeof(Leg));
   leg_struct->name = cJSON_GetObjectItemCaseSensitive(leg, "name")->valuestring;
@@ -184,9 +200,11 @@ Leg* BuildLegStruct(const cJSON* const leg) {
   return leg_struct;
 }
 
-Trips* GetTrips(CURL* const curl, const char* origin, const char* destination) {
-  char* const kOriginLocationId = GetLocationId(curl, origin);
-  char* const kDestinationLocationId = GetLocationId(curl, destination);
+Trips* GetTrips(CURL* const curl, TripParameters* trip_parameters) {
+  char* const kOriginLocationId =
+      GetLocationId(curl, trip_parameters->origin_location);
+  char* const kDestinationLocationId =
+      GetLocationId(curl, trip_parameters->destination_location);
 
 #ifndef NDEBUG
   printf("Origin location ID: %s\n", kOriginLocationId);
@@ -204,8 +222,8 @@ Trips* GetTrips(CURL* const curl, const char* origin, const char* destination) {
     return NULL;
   }
 
-  cJSON* const kTrips =
-      GetTripArray(curl, kOriginLocationId, kDestinationLocationId);
+  cJSON* const kTrips = GetTripArray(curl, trip_parameters, kOriginLocationId,
+                                     kDestinationLocationId);
 
   trips->origin_location_id = atoi(kOriginLocationId);
   trips->destination_location_id = atoi(kDestinationLocationId);
@@ -412,6 +430,9 @@ CoordinatesData* GetCoordinatesForTrip(CURL* const curl,
   size_t total_number_of_coordinates = 0;
   size_t leg_index = 0;
 
+  /** TODO(martinkedmenec): Filter out duplicate legs and don't copy them to
+   * `coordinates`
+   */
   for (leg_index = 0; leg_index < kNumberOfLegs; leg_index++) {
     CoordinatesData* leg_coordinates =
         GetCoordinatesForLeg(curl, &(trip->legs[leg_index]));

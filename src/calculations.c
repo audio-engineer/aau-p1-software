@@ -269,17 +269,17 @@ char* CalculateSecondTime(const CalculateSecondTimeParameters* const
   }
 
   char time_new[kTimeBufferSize] = {0};
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
   sprintf(time_new, "%02d:%02d", hrs_second, mins_second);
-  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+
   char* time_copy = calloc(strlen(time_new), sizeof(char));
   if (!time_copy) {
     perror("Failed to allocate memory");
     return NULL;
   }
-  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.strcpy)
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.strcpy)
   strcpy(time_copy, time_new);
-  // NOLINTEND(clang-analyzer-security.insecureAPI.strcpy)
 
   return time_copy;
 }

@@ -4,13 +4,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <sys/unistd.h>
+#endif
+#include <unistd.h>
 
 #include "globals.h"
 #include "output.h"
 #include "preferences.h"
 
+enum MaximumValues {
+  kMaximumAttributeValue = 10,
+  kMaximumHours = 23,
+  kMaximumMinutes = 59
+};
+
+enum PreferenceSources { kManual = 'm', kFile = 'f' };
+
+enum YesNo { kYes = 'y', kNo = 'n' };
+
+enum PresetValues {
+  kTimeHour = 12,
+  kTimeMinute = 30,
+  kCarFuelEfficiency = 250
+};
+
+typedef enum HoursOrMinutes { kHours = 'h', kMinutes = 'm' } HoursOrMinutes;
+
 char* ReadUserInput(const char* const message) {
-  printf("%s ", message);
+  printf("%s%s%s ", COLOR_GREEN, message, COLOR_RESET);
+  fflush(stdout);
 
   char* input = calloc(kBufferSize, sizeof(char));
 
@@ -39,234 +62,308 @@ char* ReadUserInput(const char* const message) {
   return input;
 }
 
-int GetInputInteger(const char* message, int max_value) {
-  bool valid_answer = false;
+bool IsValidTimeMode(const char choice) {
+  return (bool)((choice == kArrival) || (choice == kDeparture));
+}
+
+bool IsValidPreferenceSource(const char choice) {
+  return (bool)((choice == kManual) || (choice == kFile));
+}
+
+bool IsValidYesNo(const char choice) {
+  return (bool)((choice == kYes) || (choice == kNo));
+}
+
+char ReadCharInput(const char* const message,
+                   bool validation_function(const char choice)) {
+  char choice = '\0';
+
+  while (true) {
+    char* choose_prompts = ReadUserInput(message);
+
+    choice = choose_prompts[0];
+
+    if (validation_function(choice)) {
+      free(choose_prompts);
+
+      break;
+    }
+
+    printf("%sInvalid input. Try again.%s\n", COLOR_RED, COLOR_RESET);
+
+    free(choose_prompts);
+  }
+
+  return choice;
+}
+
+bool ReadBooleanInput(const char* const message) {
+  return (bool)(ReadCharInput(message, IsValidYesNo) == 'y' ? 1 : 0);
+}
+
+int ReadIntegerInput(const char* const message, const int max_value) {
   int output = 0;
-  while (!valid_answer) {
+  char* end = NULL;
+
+  while (true) {
     char* attribute = ReadUserInput(message);
 
     if (IsInteger(attribute)) {
-      long int attribute_num = strtol(attribute, NULL, kBaseTen);
+      long attribute_num = strtol(attribute, &end, kBaseTen);
 
       if (0 <= attribute_num && attribute_num <= max_value) {
+        free(attribute);
+
         output = (int)attribute_num;
-        valid_answer = true;
-      } else {
-        printf("Invalid answer please pick a number between 0 and %d! \n",
-               max_value);
+
+        break;
       }
     }
+
     free(attribute);
+
+    printf("%sInvalid input. Pick a number between 0 and %d!%s\n", COLOR_RED,
+           max_value, COLOR_RESET);
   }
 
   return output;
 }
 
-bool GetInputBoolean(const char* message) {
-  while (1) {
-    char* attribute_bool = ReadUserInput(message);
+char* GetTimeModePromptText(TimeMode time_mode,
+                            HoursOrMinutes hours_or_minutes) {
+  char* time_mode_prompt = calloc(kBufferSize, sizeof(char));
 
-    char attribute_bool_answer = attribute_bool[0];
-    free(attribute_bool);
+  char* selected_time_mode = time_mode == kDeparture ? "departure" : "arrival";
+  char* selected_hours_or_minutes =
+      hours_or_minutes == kHours ? " hours (0 - 23)" : " minutes (0 - 59)";
 
-    switch (attribute_bool_answer) {
-      case kYes:
-        return true;
+  // NOLINTBEGIN(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  strncat(time_mode_prompt, "Enter ", strlen("Enter "));
+  strncat(time_mode_prompt, selected_time_mode, strlen(selected_time_mode));
+  strncat(time_mode_prompt, selected_hours_or_minutes,
+          strlen(selected_hours_or_minutes));
+  strncat(time_mode_prompt, ":", strlen(":"));
+  // NOLINTEND(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
-      case kNo:
-        return false;
-
-      default:
-        printf("Invalid answer!\n");
-        break;
-    }
-  }
+  return time_mode_prompt;
 }
 
-UserPreferences ManualAttributes(void) {
-  UserPreferences attributes;
-  const int kMaxNum = 10;
+TripParameters* GetTripParameters() {
+  TripParameters* trip_parameters = calloc(1, sizeof(TripParameters));
+
+  trip_parameters->origin_location = ReadUserInput("Enter origin location:");
+  trip_parameters->destination_location =
+      ReadUserInput("Enter destination location:");
+  printf(
+      "%sDo you want the trip to be planned according to a departure time, or "
+      "arrival time?%s\n",
+      COLOR_YELLOW, COLOR_RESET);
+  trip_parameters->time_mode = (TimeMode)ReadCharInput(
+      "\tEnter 'd' for departure or 'a' for arrival:", IsValidTimeMode);
+
+  char* hours_prompt =
+      GetTimeModePromptText(trip_parameters->time_mode, kHours);
+  trip_parameters->time_hour = ReadIntegerInput(hours_prompt, kMaximumHours);
+  free(hours_prompt);
+
+  char* minutes_prompt =
+      GetTimeModePromptText(trip_parameters->time_mode, kMinutes);
+  trip_parameters->time_minute =
+      ReadIntegerInput(minutes_prompt, kMaximumMinutes);
+  free(minutes_prompt);
+
+  return trip_parameters;
+}
+
+CommutingPreferences* GetCommutingPreferences() {
+  CommutingPreferences* commuting_preferences =
+      calloc(1, sizeof(CommutingPreferences));
+
   const int kMaxCarEfficiency = 500;
   const double kConvertToAttributeDouble = 10.0;
 
   printf(
-      "To input your personal preferences please write a number between "
-      "0-10!\n");
+      "%sNow assign weights (from 1 to 10) to price, time, and sustainability "
+      "in your choice of transport.%s\n",
+      COLOR_YELLOW, COLOR_RESET);
 
   double attribute_price =
-      GetInputInteger("Price preference (0-10):", kMaxNum) /
-      kConvertToAttributeDouble;
-  double attribute_time = GetInputInteger("Time preference (0-10):", kMaxNum) /
-                          kConvertToAttributeDouble;
-  double attribute_environment =
-      GetInputInteger("Sustainability preference (0-10):", kMaxNum) /
+      ReadIntegerInput("\tPrice (0 - 10):", kMaximumAttributeValue) /
       kConvertToAttributeDouble;
   double attribute_health = 0;
+  double attribute_time =
+      ReadIntegerInput("\tTime (0 - 10):", kMaximumAttributeValue) /
+      kConvertToAttributeDouble;
+  double attribute_environment =
+      ReadIntegerInput("\tSustainability (0 - 10):", kMaximumAttributeValue) /
+      kConvertToAttributeDouble;
 
   double attribute_total = attribute_price + attribute_health + attribute_time +
                            attribute_environment;
 
-  // Normalize the attributes to between 0 and 1.
-  attribute_price = attribute_price / attribute_total;
-  attribute_time = attribute_time / attribute_total;
-  attribute_environment = attribute_environment / attribute_total;
-  attribute_health = attribute_health / attribute_total;
+  commuting_preferences->price = attribute_price / attribute_total;
+  commuting_preferences->time = attribute_time / attribute_total;
+  commuting_preferences->environment = attribute_environment / attribute_total;
+  commuting_preferences->health = attribute_health / attribute_total;
 
-  bool attribute_walk =
-      GetInputBoolean("Can your route include walking? (y/n):");
-  bool attribute_bike =
-      GetInputBoolean("Can your route include biking? (y/n):");
-  bool attribute_train =
-      GetInputBoolean("Can your route include trains? (y/n):");
-  bool attribute_car = GetInputBoolean("Can your route include a car? (y/n):");
+  commuting_preferences->is_walking =
+      ReadBooleanInput("Can your route include walking? (y/n):");
+  commuting_preferences->is_biking =
+      ReadBooleanInput("Can your route include biking? (y/n):");
+  commuting_preferences->is_using_train =
+      ReadBooleanInput("Can your route include trains? (y/n):");
+  commuting_preferences->is_driving =
+      ReadBooleanInput("Can your route include a car? (y/n):");
 
-  // Transfer the user data to the UserPreferences struct.
-  attributes.price = attribute_price;
-  attributes.time = attribute_time;
-  attributes.environment = attribute_environment;
-  attributes.health = attribute_health;
+  if (!commuting_preferences->is_driving) {
+    commuting_preferences->car_fuel_efficiency = 0;
 
-  // Save attributes to file.
-  SetUserPreference("price", attribute_price);
-  SetUserPreference("time", attribute_time);
-  SetUserPreference("environment", attribute_environment);
-  SetUserPreference("health", attribute_health);
-
-  attributes.walk = attribute_walk;
-  attributes.bike = attribute_bike;
-  attributes.train = attribute_train;
-
-  if (attribute_car) {
-    int attribute_car_efficiency = GetInputInteger(
-        "What is the efficiency of the car in kilometers/liter:",
-        kMaxCarEfficiency);
-    attributes.car = attribute_car;
-    attributes.car_fuel_efficiency = attribute_car_efficiency;
-  } else {
-    attributes.car_fuel_efficiency = 0;
+    return commuting_preferences;
   }
 
-  return attributes;
+  commuting_preferences->car_fuel_efficiency =
+      ReadIntegerInput("What is the efficiency of the car in km/l? (0 - 500):",
+                       kMaxCarEfficiency);
+
+  return commuting_preferences;
 }
 
-UserPreferences PresetAttributes(void) {
-  const double kAttributePreferences = 0.25;
-  const bool kPredefinedTransport = true;
-  const int kFuelEfficiency = 100;
+UserPreferences* GetManualPreferences() {
+  UserPreferences* user_preferences = calloc(1, sizeof(UserPreferences));
 
-  UserPreferences user_attributes_generic = {
-      kAttributePreferences, kAttributePreferences, kAttributePreferences,
-      kAttributePreferences, kPredefinedTransport,  kPredefinedTransport,
-      kPredefinedTransport,  kPredefinedTransport,  kFuelEfficiency};
+  user_preferences->trip_parameters = GetTripParameters();
+  user_preferences->commuting_preferences = GetCommutingPreferences();
 
-  return user_attributes_generic;
+  return user_preferences;
 }
 
-UserPreferences FileAttributes(void) {
-  const bool kTransportPreferences = true;
-  const int kFuelEfficiency = 100;
+UserPreferences* GetFilePreferences() {
+  if (0 != access("preferences.json", F_OK)) {
+    return NULL;
+  }
 
-  UserPreferences file_attributes = {0};
+  UserPreferences* user_preferences = calloc(1, sizeof(UserPreferences));
+  CommutingPreferences* commuting_preferences =
+      calloc(1, sizeof(CommutingPreferences));
+  TripParameters* trip_parameters = calloc(1, sizeof(TripParameters));
 
-  file_attributes.price = GetUserPreference("price");
-  file_attributes.time = GetUserPreference("time");
-  file_attributes.environment = GetUserPreference("environment");
-  file_attributes.health = GetUserPreference("health");
+  if (!user_preferences || !commuting_preferences || !trip_parameters) {
+    perror(
+        "Could not allocate UserPreferences, or CommutingPreferences, or "
+        "TripParameters");
 
-  file_attributes.walk = kTransportPreferences;
-  file_attributes.bike = kTransportPreferences;
-  file_attributes.train = kTransportPreferences;
-  file_attributes.car = kTransportPreferences;
-  file_attributes.car_fuel_efficiency = kFuelEfficiency;
+    exit(EXIT_FAILURE);
+  }
 
-  return file_attributes;
+  commuting_preferences->price = GetUserPreference("price");
+  commuting_preferences->time = GetUserPreference("time");
+  commuting_preferences->environment = GetUserPreference("environment");
+  commuting_preferences->health = GetUserPreference("health");
+  commuting_preferences->is_walking = true;
+  commuting_preferences->is_biking = true;
+  commuting_preferences->is_using_train = true;
+  commuting_preferences->is_driving = true;
+  commuting_preferences->car_fuel_efficiency = kCarFuelEfficiency;
+  user_preferences->commuting_preferences = commuting_preferences;
+
+  trip_parameters->origin_location = strdup("Slagelse");
+  trip_parameters->destination_location = strdup("Hellerup");
+  trip_parameters->time_mode = kDeparture;
+  trip_parameters->time_hour = kTimeHour;
+  trip_parameters->time_minute = kTimeMinute;
+  user_preferences->trip_parameters = trip_parameters;
+
+  return user_preferences;
 }
 
-UserPreferences PromptAttributes(void) {
-  while (1) {
-    char* choice = ReadUserInput(
-        "Do you want to manually input your preferenes? (m)\nLoad preferences "
-        "from a file (f)\nUse presets? (p)\n       >>>");
+void SavePreferencesToFile(UserPreferences* user_preferences) {
+  SetUserPreference("price", user_preferences->commuting_preferences->price);
+  SetUserPreference("time", user_preferences->commuting_preferences->time);
+  SetUserPreference("environment",
+                    user_preferences->commuting_preferences->environment);
+  SetUserPreference("health", user_preferences->commuting_preferences->health);
+}
 
-    char user_choice = choice[0];
+void ShowBanner() {
+  FILE* file = fopen("banner.txt", "r");
 
-    free(choice);
+  if (file == NULL) {
+    perror("Error opening banner.txt file");
 
-    switch (user_choice) {
-      case kManually:
-        return ManualAttributes();
+    exit(EXIT_FAILURE);
+  }
 
-      case kPreset:
-        return PresetAttributes();
+  char line[kBufferSize] = {0};
 
-      case kFile:
-        return FileAttributes();
+  while (fgets(line, sizeof(line), file)) {
+    printf("%s%s%s", COLOR_MAGENTA, line, COLOR_RESET);
+  }
 
-      default:
-        printf("Invalid input!\n");
+  fclose(file);
+}
+
+UserPreferences* GetUserPreferences() {
+  printf("%sWelcome to the personalized interactive%s\n", COLOR_CYAN,
+         COLOR_RESET);
+  ShowBanner();
+  printf("%sCopyright © 2023 AAU%s\n", COLOR_CYAN, COLOR_RESET);
+
+  printf("\n");
+  printf(
+      "%sWould you like to initialize using the values saved in your "
+      "preferences "
+      "file, or manually input them?%s\n",
+      COLOR_YELLOW, COLOR_RESET);
+
+  UserPreferences* user_preferences = NULL;
+
+  switch (ReadCharInput("\tEnter 'f' for file values or 'm' for manual input:",
+                        IsValidPreferenceSource)) {
+    case kFile:
+      user_preferences = GetFilePreferences();
+
+      if (user_preferences) {
         break;
-    }
-    printf("\n");
+      }
+
+      printf(
+          "%sPreferences file could not be found. Continuing using manual "
+          "input.%s\n",
+          COLOR_RED, COLOR_RESET);
+    case kManual:
+      user_preferences = GetManualPreferences();
+
+      if (ReadBooleanInput(
+              "Do you want to save your preferences to a file? (y/n):")) {
+        SavePreferencesToFile(user_preferences);
+      }
+
+      break;
+    default:
+      break;
   }
+
+  if (!user_preferences) {
+    perror("User preferences could not be initialized");
+
+    exit(EXIT_FAILURE);
+  }
+
+  return user_preferences;
 }
 
-void PromptInputParameters(InputParameters* user_data_struct) {
-  const double kAttributePreferences = 0.25;
-  const bool kTransportPreferences = true;
-  const int kHoursInDay = 24;
-  const int kMinutesInHour = 60;
+void FreeTripParameters(TripParameters* trip_parameters) {
+  free(trip_parameters->origin_location);
+  free(trip_parameters->destination_location);
+  free(trip_parameters);
+}
 
-  const int kFuelEfficiency = 100;
-  const int kClockHour = 12;
-  const int kClockMinutes = 30;
+void FreeCommutingPreferences(CommutingPreferences* commuting_preferences) {
+  free(commuting_preferences);
+}
 
-  bool valid_answer = false;
-
-  UserPreferences user_attributes_generic = {
-      kAttributePreferences, kAttributePreferences, kAttributePreferences,
-      kAttributePreferences, kTransportPreferences, kTransportPreferences,
-      kTransportPreferences, kTransportPreferences, kFuelEfficiency};
-
-  char choice = 0;
-
-  while (!valid_answer) {
-    char* choose_prompts = ReadUserInput(
-        "Use predefined or manually input? (p = predefined or m = manual) :");
-
-    choice = choose_prompts[0];
-
-    if (choice == kPreset || choice == kManually) {
-      valid_answer = true;
-    }
-
-    free(choose_prompts);
-  }
-
-  if (choice == kPreset) {
-    user_data_struct->origin_location = "Frederikssund";
-    user_data_struct->destination_location = "Carlsberg";
-
-    user_data_struct->departure_time_mode = true;
-    user_data_struct->clock_hour = kClockHour;
-    user_data_struct->clock_minute = kClockMinutes;
-
-    user_data_struct->user_attributes = user_attributes_generic;
-  } else if (choice == kManually) {
-    char* origin_location = ReadUserInput("Start location :");
-    char* destination_location = ReadUserInput("End location :");
-
-    user_data_struct->origin_location = origin_location;
-    user_data_struct->destination_location = destination_location;
-
-    user_data_struct->departure_time_mode = GetInputBoolean(
-        "Do you want to plan routes for Departure time? (y) Or Arrival time? "
-        "(n):");
-
-    user_data_struct->clock_hour =
-        GetInputInteger("Input arrival/departure hour:", kHoursInDay - 1);
-    user_data_struct->clock_minute = GetInputInteger(
-        "Input arrival/departure minutes :", kMinutesInHour - 1);
-
-    user_data_struct->user_attributes = PromptAttributes();
-  }
+void FreeUserPreferences(UserPreferences* user_preferences) {
+  FreeTripParameters(user_preferences->trip_parameters);
+  FreeCommutingPreferences(user_preferences->commuting_preferences);
+  free(user_preferences);
 }

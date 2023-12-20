@@ -53,9 +53,9 @@ void SetUserPreference(const char* const key, const double value) {
   fclose(preferences);
 
   if (kBytes < kFileSize) {
-    perror("Something happened while reading user preference");
-
     free(kFileBuffer);
+
+    perror("Something happened while reading user preference");
 
     return;
   }
@@ -87,7 +87,8 @@ double GetUserPreference(const char* const key) {
   FILE* user_preferences = fopen("preferences.json", "r");
 
   if (!user_preferences) {
-    printf("Error opening user preferences file!\n");
+    perror("Error opening user preferences file");
+
     return value;
   }
 
@@ -96,18 +97,24 @@ double GetUserPreference(const char* const key) {
   fseek(user_preferences, 0, SEEK_SET);
 
   char* const kFileBuffer = calloc(kFileSize + 1, sizeof(char));
+
   if (!kFileBuffer) {
-    printf("Error allocating memory for file buffer!\n");
     fclose(user_preferences);
+
+    perror("Error allocating memory for file buffer");
+
     return value;
   }
+
   const unsigned long kBytes =
       fread(kFileBuffer, sizeof(char), kFileSize, user_preferences);
   fclose(user_preferences);
 
   if (kBytes != kFileSize) {
-    printf("Error reading user preferences file!\n");
     free(kFileBuffer);
+
+    perror("Error reading user preferences file");
+
     return value;
   }
 
@@ -116,7 +123,8 @@ double GetUserPreference(const char* const key) {
   free(kFileBuffer);
 
   if (!json_preferences) {
-    printf("Error parsing JSON file!\n");
+    perror("Error parsing JSON file");
+
     return value;
   }
 

@@ -12,3 +12,5 @@ add_subdirectory(tests/)
 add_executable(${PROJECT_NAME} src/main.c)
 target_link_libraries(${PROJECT_NAME} PRIVATE aau_p1_software_library)
 target_compile_options(${PROJECT_NAME} PRIVATE -Werror -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
+
+configure_file(src/banner.txt ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)

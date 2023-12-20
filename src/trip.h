@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "curl/curl.h"
+#include "input.h"
 
 typedef struct Location {
   const char* const kName;
@@ -66,7 +67,7 @@ typedef struct CoordinatesData {
  * @return Pointer to a Trips struct containing the trip data from the
  * Rejseplanen API.
  */
-Trips* GetTrips(CURL* curl, const char* origin, const char* destination);
+Trips* GetTrips(CURL* curl, TripParameters* trip_parameters);
 
 /**
  * @brief Merges the coordinates for each leg of a trip into a single array.
