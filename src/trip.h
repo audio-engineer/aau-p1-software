@@ -79,4 +79,14 @@ Trips* GetTrips(CURL* curl, TripParameters* trip_parameters);
  */
 CoordinatesData* GetCoordinatesForTrip(CURL* curl, const Trip* trip);
 
+/**
+ * @brief Merges the coordinates for a leg of a trip into an array.
+ *
+ * @param curl A CURL instance.
+ * @param trip A Leg struct.
+ * @return Pointer to a CoordinatesData struct that contains a pointer to an
+ * array of Coordinates structs.
+ */
+CoordinatesData* GetCoordinatesForLeg(CURL* curl, const Leg* leg);
+
 #endif  // AAU_P1_SOFTWARE_SRC_TRIP_H_

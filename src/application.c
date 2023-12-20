@@ -39,8 +39,8 @@ void Run() {
   TripScore* trip_score = NULL;
   trip_score = (TripScore*)calloc(trips->number_of_trips, sizeof(TripScore));
 
-  // Function to populate data array to be deleted later.
-  TESTPopulateTripArray(trip_data, trips->number_of_trips);
+  // Calculate the attributes.
+  CalculateTripData(trip_data, trips, kCurl, user_preferences);
 
   // Reads data from data array and writes data to score array.
   Evaluate(trip_data, trip_score, trips->number_of_trips);

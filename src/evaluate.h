@@ -3,6 +3,12 @@
 
 #include <stddef.h>
 
+#include "calculations.h"
+#include "curl/curl.h"
+#include "curl/easy.h"
+#include "input.h"
+#include "trip.h"
+
 // Constants for testing until we have concrete calculations of the attributes
 // of the routes.
 enum ArbitrarySizes {
@@ -14,10 +20,11 @@ enum ArbitrarySizes {
    decided. */
 typedef struct TripData {
   int trip_id;
-  double price;
-  double health;
-  double time;
-  double environment;
+  int trip_distance;
+  int price;
+  int health;
+  int time;
+  int environment;
 } TripData;
 
 typedef struct TripScore {
@@ -41,12 +48,13 @@ void CalculateScore(TripData trip_data[], TripScore trip_score[],
 
 void Evaluate(TripData data_arr[], TripScore score_arr[], size_t size_arr);
 
-/**
- * TODO To be removed
- *
- * @param arr
- * @param size
- */
-void TESTPopulateTripArray(TripData arr[], size_t size);
+void CalculateTripData(TripData data_arr[], Trips* trips, CURL* curl,
+                       UserPreferences* user_input_parameters);
+
+int CalculateLegDistance(CURL* k_curl, const Trip* trip, size_t leg_index);
+
+ModeOfTransport DetermineModeOfTransport(char* vehicle);
+
+int CalculateMinutes(Trip trip);
 
 #endif  // AAU_P1_SOFTWARE_SRC_EVALUATE_H_
